@@ -74,6 +74,7 @@ class Jogo:
 
         if self.colisao(self.heroi, self.inimigo):
             print("COLISÃO!")
+            #definitivamente editando
  
 
     def colisao(self, obj1, obj2):
