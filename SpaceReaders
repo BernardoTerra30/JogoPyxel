@@ -1,0 +1,18 @@
+import pyxel
+import random
+
+class nave:
+    def __init__(self):
+        pass
+class jogo:
+    def __init__(self):
+        pyxel.init(160, 120, title = 'jogo')
+        pyxel.run(self.update, self.draw)
+
+    def update(self):
+        pass
+
+    def draw():
+        pyxel.cls(0)
+
+jogo()

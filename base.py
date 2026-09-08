@@ -32,7 +32,7 @@ class Jogo:
         self.inimigo = Personagem(80, 80, 8, 8, 10)
         # Atributos aqui
 
-        pyxel.images[0].load(0, 0, 'cat_16x16.png')
+        pyxel.images[0].load(0, 0, 'img_base.png')
 
         pyxel.run(self.update, self.draw)
 
