@@ -1,19 +1,44 @@
 import pyxel
-#import random
+import random
 
-class nave:
-    def __init__(self):
-        pass
+altura = 256
+largura = 240
+nave = 32
 
-class jogo:
+#Classe para o fundo estrelado:
+class Fundo:
     def __init__(self):
-        pyxel.init(160, 120, title = 'jogo')
+        self.x = random.randint(0, largura)
+        self.y = random.randint(0, altura)
+        self.velocidade = random.choice([0.3, 0.3, 0.4])
+        self.tamanho = random.choice([1,1,1,2])
+
+    def update(self):
+        self.y += self.velocidade
+        if self.y >= altura:
+            self.y = 0
+            self.x = random.randint(0, largura - 1) #move a estrela para um x aleatoria quando ela alcança o fim da janela.
+
+    def draw(self):
+        pyxel.rect(int(self.x),int(self.y),self.tamanho,self.tamanho,7) # como as estrelas são quadrados, altura == largura
+
+class Jogo:
+    def __init__(self):
+        pyxel.init(largura, altura, title = 'jogo')
+    
+        self.estrelas = []
+        for i in range(70):
+            self.estrelas.append(Fundo())
+
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        pass
+        for estrela in self.estrelas:
+            estrela.update()
 
-    def draw():
+    def draw(self):
         pyxel.cls(0)
+        for fundo in self.estrelas:
+            fundo.draw()
 
-jogo()
+Jogo()
