@@ -22,23 +22,60 @@ class Fundo:
     def draw(self):
         pyxel.rect(int(self.x),int(self.y),self.tamanho,self.tamanho,7) # como as estrelas são quadrados, altura == largura
 
+#Classe responsável pela nave do player
+class Player:
+    def __init__(self):
+        self.x = largura // 2 # bota a nave no meio da janela capish
+        self.y = altura - 35
+        self.velocidade = 2.5
+
+    def update(self):
+        #movimentação
+        if pyxel.btn(pyxel.KEY_LEFT):
+            self.x -= self.velocidade
+        if pyxel.btn(pyxel.KEY_RIGHT):
+            self.x += self.velocidade
+
+        # Impede sair da tela
+        if self.x < nave // 2:
+            self.x = nave // 2
+
+        if self.x > largura - nave // 2:
+            self.x = largura - nave // 2
+
+    def draw(self):
+        pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave,nave, 0)
+
+
 class Jogo:
     def __init__(self):
         pyxel.init(largura, altura, title = 'jogo')
-    
+        self.player = Player()
+
+        #fundo
         self.estrelas = []
         for i in range(70):
             self.estrelas.append(Fundo())
 
+        #banco de imagens - sprites
+        pyxel.images[0].load(0,0,"Sprites/nave.png")
+        
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        #fundo
         for estrela in self.estrelas:
             estrela.update()
 
+        self.player.update()
+
     def draw(self):
         pyxel.cls(0)
+        
+        #fundo
         for fundo in self.estrelas:
             fundo.draw()
+
+        self.player.draw()
 
 Jogo()
