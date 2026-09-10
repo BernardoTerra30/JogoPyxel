@@ -3,7 +3,7 @@ import random
 
 altura = 256
 largura = 240
-nave = 32
+nave = 16
 
 #Classe para o fundo estrelado:
 class Fundo:
@@ -58,7 +58,8 @@ class Jogo:
             self.estrelas.append(Fundo())
 
         #banco de imagens - sprites
-        pyxel.images[0].load(0,0,"Sprites/nave.png")
+        #pyxel.images[0].load(0,0,"meu_jogo.pyxres")
+        pyxel.load("Sprites/meu_jogo.pyxres")
         
         pyxel.run(self.update, self.draw)
 
@@ -71,7 +72,7 @@ class Jogo:
 
     def draw(self):
         pyxel.cls(0)
-        
+
         #fundo
         for fundo in self.estrelas:
             fundo.draw()
