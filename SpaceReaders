@@ -26,8 +26,11 @@ class Fundo:
 class Player:
     def __init__(self):
         self.x = largura // 2 # bota a nave no meio da janela capish
-        self.y = altura - 35
+        self.y = altura - 50
         self.velocidade = 2.5
+        #animação fogo da nave
+        self.time_animacao = 0
+        self.frame_animacao = 0
 
     def update(self):
         #movimentação
@@ -39,13 +42,24 @@ class Player:
         # Impede sair da tela
         if self.x < nave // 2:
             self.x = nave // 2
-
         if self.x > largura - nave // 2:
             self.x = largura - nave // 2
 
-    def draw(self):
-        pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave,nave, 0)
+        #animação fogo da nave
+        self.time_animacao += 1
+        if self.time_animacao >= 30:
+            self.time_animacao = 0
+            if self.frame_animacao == 0:
+                self.frame_animacao = 1
+            else:
+                self.frame_animacao = 0
 
+    def draw(self):
+        if self.frame_animacao == 0:
+            pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
+        else:
+            pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
+                
 
 class Jogo:
     def __init__(self):
@@ -58,7 +72,6 @@ class Jogo:
             self.estrelas.append(Fundo())
 
         #banco de imagens - sprites
-        #pyxel.images[0].load(0,0,"meu_jogo.pyxres")
         pyxel.load("Sprites/meu_jogo.pyxres")
         
         pyxel.run(self.update, self.draw)
