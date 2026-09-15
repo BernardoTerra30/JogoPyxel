@@ -12,16 +12,17 @@ class Fundo:
         self.y = random.randint(0, altura)
         self.velocidade = random.choice([0.3, 0.3, 0.4])
         self.tamanho = random.choice([1,1,1,2])
-
+        
     def update(self):
         self.y += self.velocidade
         if self.y >= altura:
             self.y = 0
             self.x = random.randint(0, largura - 1) #move a estrela para um x aleatoria quando ela alcança o fim da janela.
-
+        
     def draw(self):
         pyxel.rect(int(self.x),int(self.y),self.tamanho,self.tamanho,7) # como as estrelas são quadrados, altura == largura
-
+        
+        
 #Classe responsável pela nave do player
 class Player:
     def __init__(self):
@@ -59,11 +60,11 @@ class Player:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
         else:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
-                
+                 
 
 class Jogo:
     def __init__(self):
-        pyxel.init(largura, altura, title = 'jogo')
+        pyxel.init(largura, altura, title = 'SpaceRaiders')
         self.player = Player()
 
         #fundo
