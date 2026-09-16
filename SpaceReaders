@@ -40,6 +40,11 @@ class Player:
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.x += self.velocidade
 
+        if pyxel.btn(pyxel.KEY_UP):
+            self.y -= self.velocidade
+        if pyxel.btn(pyxel.KEY_DOWN):
+            self.y += self.velocidade
+
         # Impede sair da tela
         if self.x < nave // 2:
             self.x = nave // 2
