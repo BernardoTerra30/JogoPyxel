@@ -4,6 +4,7 @@ import random
 altura = 256
 largura = 240
 nave = 16
+spritePirata = (16,0)
 
 #Classe para o fundo estrelado:
 class Fundo:
@@ -60,21 +61,53 @@ class Player:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
         else:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
-                 
+
+class Inimigo:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.ativo = True
+        self.vida = 4
+        self.velocidade = 0.5
+        self.sprite = spritePirata
+
+    def update(self):
+        self.y += self.velocidade
+        if self.y > altura + nave:
+
+            self.ativo = False
+
+
+    def draw(self):
+        if not self.ativo:
+            return
+
+        sprite_x, sprite_y = self.sprite
+
+        pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
+
+
 
 class Jogo:
     def __init__(self):
         pyxel.init(largura, altura, title = 'SpaceRaiders')
         self.player = Player()
 
+        #banco de imagens - sprites
+        pyxel.load("Sprites/meu_jogo.pyxres")
+
         #fundo
         self.estrelas = []
         for i in range(70):
             self.estrelas.append(Fundo())
 
-        #banco de imagens - sprites
-        pyxel.load("Sprites/meu_jogo.pyxres")
-        
+
+        self.inimigos = []
+        self.timerSpawn = 0
+        self.tempoSpawn = 70
+        self.spawnFinalizado = False
+
+
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -82,7 +115,25 @@ class Jogo:
         for estrela in self.estrelas:
             estrela.update()
 
+
+        if not self.spawnFinalizado:
+            self.timerSpawn += 1
+            if self.timerSpawn >= self.tempoSpawn:
+                self.timerSpawn = 0
+                self.criarInimigo()
+
+        for inimigo in self.inimigos:
+            inimigo.update()
+        
         self.player.update()
+
+    def criarInimigo(self):
+        if self.spawnFinalizado:
+            return
+        x = random.randint(nave // 2, largura - nave // 2)
+        y = -nave//2
+        self.inimigos.append(Inimigo(x,y))
+
 
     def draw(self):
         pyxel.cls(0)
@@ -91,6 +142,9 @@ class Jogo:
         for fundo in self.estrelas:
             fundo.draw()
 
+        for inimigo in self.inimigos:
+            inimigo.draw()
+        
         self.player.draw()
 
 Jogo()
