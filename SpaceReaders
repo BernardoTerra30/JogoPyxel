@@ -4,6 +4,10 @@ import random
 altura = 256
 largura = 240
 nave = 16
+spriteAlien = (16,0)
+spritePirata = (32,0)
+spriteUFO = (48,0)
+
 
 #Classe para o fundo estrelado:
 class Fundo:
@@ -65,12 +69,63 @@ class Player:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
         else:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
-                 
+
+class Disparos:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def update(self):
+        self.y -= 4
+
+    def draw(self):
+        pyxel.rect(self.x, self.y, 2, 5, 10)
+
+
+class Inimigo:
+    def __init__(self,x,y,tipo):
+        self.x = x
+        self.y = y
+        self.tipo = tipo
+        self.ativo = True
+
+        if tipo == 1:
+            self.vida = 1
+            self.velocidade = 0.5
+            self.sprite = spriteAlien
+        elif tipo == 2:
+            self.vida = 2
+            self.velocidade = 0.7
+            self.sprite = spritePirata
+        elif tipo == 3:
+            self.vida = 4
+            self.velocidade = 1.0
+            self.sprite = spriteUFO
+
+    def update(self):
+        self.y += self.velocidade
+        if self.y > altura + nave:
+
+            self.ativo = False
+
+
+    def draw(self):
+        if not self.ativo:
+            return
+
+        sprite_x, sprite_y = self.sprite
+
+        pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
+
+
 
 class Jogo:
     def __init__(self):
         pyxel.init(largura, altura, title = 'SpaceRaiders')
         self.player = Player()
+
+        #banco de imagens - sprites
+        pyxel.load("Sprites/meu_jogo.pyxres")
 
         #fundo
         self.estrelas = []
@@ -79,15 +134,63 @@ class Jogo:
 
         #banco de imagens - sprites
         pyxel.load("Sprites/meu_jogo.pyxres")
-        
+
+        #disparos
+        self.disparos = []
+        self.tempo_tiro = 0
+
+
+        self.inimigos = []
+        self.timerSpawn = 0
+        self.tempoSpawn = 70
+        self.spawnFinalizado = False
+
+
         pyxel.run(self.update, self.draw)
+
 
     def update(self):
         #fundo
         for estrela in self.estrelas:
             estrela.update()
 
+
+        if not self.spawnFinalizado:
+            self.timerSpawn += 1
+            if self.timerSpawn >= self.tempoSpawn:
+                self.timerSpawn = 0
+                self.criarInimigo()
+
+        for inimigo in self.inimigos:
+            inimigo.update()
+        
         self.player.update()
+
+        # Cria um tiro ao segurar apertar espaço e quando o contador zera
+        if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0:
+            tiro = Disparos(self.player.x - 1, self.player.y - 13)
+            self.disparos.append(tiro)
+            self.tempo_tiro = 5
+
+        # Diminui a espera a cada atualização
+        if self.tempo_tiro > 0:
+            self.tempo_tiro -= 1
+
+        # Movimenta os tiros e remove os que saíram da tela
+        for tiro in self.disparos[:]:
+            tiro.update()
+
+            if tiro.y + 5 < 0:
+                self.disparos.remove(tiro)
+
+    def criarInimigo(self):
+        if self.spawnFinalizado:
+            return
+        x = random.randint(nave // 2, largura - nave // 2)
+        y = -nave//2
+        tipo = 1
+        self.inimigos.append(Inimigo(x,y,tipo))
+
 
     def draw(self):
         pyxel.cls(0)
@@ -96,6 +199,13 @@ class Jogo:
         for fundo in self.estrelas:
             fundo.draw()
 
+        for inimigo in self.inimigos:
+            inimigo.draw()
+        
         self.player.draw()
+
+        #disparos
+        for tiro in self.disparos:
+            tiro.draw()
 
 Jogo()
