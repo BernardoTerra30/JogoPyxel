@@ -65,6 +65,18 @@ class Player:
         else:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
 
+class Disparos:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def update(self):
+        self.y -= 4
+
+    def draw(self):
+        pyxel.rect(self.x, self.y, 2, 5, 10)
+
+
 class Inimigo:
     def __init__(self,x,y,tipo):
         self.x = x
@@ -115,6 +127,13 @@ class Jogo:
         for i in range(70):
             self.estrelas.append(Fundo())
 
+        #banco de imagens - sprites
+        pyxel.load("Sprites/meu_jogo.pyxres")
+
+        #disparos
+        self.disparos = []
+        self.tempo_tiro = 0
+
 
         self.inimigos = []
         self.timerSpawn = 0
@@ -123,6 +142,7 @@ class Jogo:
 
 
         pyxel.run(self.update, self.draw)
+
 
     def update(self):
         #fundo
@@ -140,6 +160,23 @@ class Jogo:
             inimigo.update()
         
         self.player.update()
+
+        # Cria um tiro ao segurar apertar espaço e quando o contador zera
+        if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0:
+            tiro = Disparos(self.player.x - 1, self.player.y - 13)
+            self.disparos.append(tiro)
+            self.tempo_tiro = 5
+
+        # Diminui a espera a cada atualização
+        if self.tempo_tiro > 0:
+            self.tempo_tiro -= 1
+
+        # Movimenta os tiros e remove os que saíram da tela
+        for tiro in self.disparos[:]:
+            tiro.update()
+
+            if tiro.y + 5 < 0:
+                self.disparos.remove(tiro)
 
     def criarInimigo(self):
         if self.spawnFinalizado:
@@ -161,5 +198,9 @@ class Jogo:
             inimigo.draw()
         
         self.player.draw()
+
+        #disparos
+        for tiro in self.disparos:
+            tiro.draw()
 
 Jogo()
