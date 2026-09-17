@@ -4,7 +4,10 @@ import random
 altura = 256
 largura = 240
 nave = 16
-spritePirata = (16,0)
+spriteAlien = (16,0)
+spritePirata = (32,0)
+spriteUFO = (48,0)
+
 
 #Classe para o fundo estrelado:
 class Fundo:
@@ -63,13 +66,24 @@ class Player:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
 
 class Inimigo:
-    def __init__(self,x,y):
+    def __init__(self,x,y,tipo):
         self.x = x
         self.y = y
+        self.tipo = tipo
         self.ativo = True
-        self.vida = 4
-        self.velocidade = 0.5
-        self.sprite = spritePirata
+
+        if tipo == 1:
+            self.vida = 1
+            self.velocidade = 0.5
+            self.sprite = spriteAlien
+        elif tipo == 2:
+            self.vida = 2
+            self.velocidade = 0.7
+            self.sprite = spritePirata
+        elif tipo == 3:
+            self.vida = 4
+            self.velocidade = 1.0
+            self.sprite = spriteUFO
 
     def update(self):
         self.y += self.velocidade
@@ -132,7 +146,8 @@ class Jogo:
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
-        self.inimigos.append(Inimigo(x,y))
+        tipo = 1
+        self.inimigos.append(Inimigo(x,y,tipo))
 
 
     def draw(self):
