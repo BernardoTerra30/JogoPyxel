@@ -168,23 +168,55 @@ class Jogo:
 
         # Cria um tiro ao segurar apertar espaço e quando o contador zera
         if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0:
+
             tiro = Disparos(self.player.x - 1, self.player.y - 13)
             self.disparos.append(tiro)
             self.tempo_tiro = 5
 
         # Diminui a espera a cada atualização
         if self.tempo_tiro > 0:
+            
             self.tempo_tiro -= 1
 
         # Movimenta os tiros e remove os que saíram da tela
+        
+                # Movimenta os tiros
         for tiro in self.disparos[:]:
+
             tiro.update()
 
+            # Remove o tiro quando sai da tela
             if tiro.y + 5 < 0:
+
                 self.disparos.remove(tiro)
+                continue
+
+            # Verifica se o tiro acertou algum inimigo
+            for inimigo in self.inimigos:
+
+                if inimigo.ativo:
+
+                    if (tiro.x < inimigo.x + 8 and tiro.x + 2 > inimigo.x - 8 and tiro.y < inimigo.y + 8 and tiro.y + 5 > inimigo.y - 8):
+
+                        inimigo.vida -= 1
+                        self.disparos.remove(tiro)
+
+                        if inimigo.vida <= 0:
+
+                            inimigo.ativo = False
+                        break
+
+        # Remove os inimigos destruídos ou que saíram da tela
+        for inimigo in self.inimigos[:]:
+
+            if not inimigo.ativo:
+
+                self.inimigos.remove(inimigo)
 
     def criarInimigo(self):
+
         if self.spawnFinalizado:
+
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
