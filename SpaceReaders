@@ -4,6 +4,7 @@ import random
 altura = 256
 largura = 240
 nave = 16
+xpObjetivo = 5000
 spriteAlien = (16,0)
 spritePirata = (32,0)
 spriteUFO = (48,0)
@@ -92,14 +93,17 @@ class Inimigo:
         if tipo == 1:
             self.vida = 1
             self.velocidade = 0.5
+            self.xp = 100
             self.sprite = spriteAlien
         elif tipo == 2:
             self.vida = 2
             self.velocidade = 0.7
+            self.xp = 200
             self.sprite = spritePirata
         elif tipo == 3:
             self.vida = 4
             self.velocidade = 1.0
+            self.xp = 300
             self.sprite = spriteUFO
 
     def update(self):
@@ -122,8 +126,11 @@ class Inimigo:
 class Jogo:
     def __init__(self):
         pyxel.init(largura, altura, title = 'SpaceRaiders')
-        self.player = Player()
 
+        #jogador
+        self.player = Player()
+        self.xp = 0
+    
         #banco de imagens - sprites
         pyxel.load("Sprites/meu_jogo.pyxres")
 
@@ -132,14 +139,13 @@ class Jogo:
         for i in range(70):
             self.estrelas.append(Fundo())
 
-        #banco de imagens - sprites
-        pyxel.load("Sprites/meu_jogo.pyxres")
+        self.fase = 1
 
         #disparos
         self.disparos = []
         self.tempo_tiro = 0
 
-
+        #inimigos
         self.inimigos = []
         self.timerSpawn = 0
         self.tempoSpawn = 70
@@ -154,6 +160,7 @@ class Jogo:
         for estrela in self.estrelas:
             estrela.update()
 
+        self.verificarFase()
 
         if not self.spawnFinalizado:
             self.timerSpawn += 1
@@ -165,6 +172,7 @@ class Jogo:
             inimigo.update()
         
         self.player.update()
+
 
         # Cria um tiro ao segurar apertar espaço e quando o contador zera
         if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0:
@@ -184,13 +192,22 @@ class Jogo:
                 self.disparos.remove(tiro)
 
     def criarInimigo(self):
+        
         if self.spawnFinalizado:
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
-        tipo = 1
-        self.inimigos.append(Inimigo(x,y,tipo))
+        self.inimigos.append(Inimigo(x,y,self.fase))
 
+    def verificarFase(self):
+        if self.xp < 1000:
+            self.fase = 1
+        elif self.xp < 2500:
+            self.fase = 2
+        elif self.xp < xpObjetivo:
+            self.fase = 3
+        else: 
+            self.spawnFinalizado = True
 
     def draw(self):
         pyxel.cls(0)
