@@ -97,17 +97,17 @@ class Inimigo:
         if tipo == 1:
             self.vida = 1
             self.velocidade = 0.5
-            self.xp = 1000
+            self.xp = 50
             self.sprite = spriteAlien
         elif tipo == 2:
             self.vida = 2
-            self.velocidade = 0.7
-            self.xp = 200
+            self.velocidade = 0.6
+            self.xp = 70
             self.sprite = spritePirata
         elif tipo == 3:
-            self.vida = 4
-            self.velocidade = 1.0
-            self.xp = 300
+            self.vida = 3
+            self.velocidade = 0.9
+            self.xp = 100
             self.sprite = spriteUFO
 
     def update(self):
@@ -139,8 +139,6 @@ class Jogo:
         self.estrelas = []
         for i in range(70):
             self.estrelas.append(Fundo())
-
-        self.fase = 1
 
         #disparos
         self.disparos = []
@@ -228,8 +226,7 @@ class Jogo:
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
-        tipo = 1
-        self.inimigos.append(Inimigo(x,y,tipo))
+        self.inimigos.append(Inimigo(x,y,self.fase))
 
     def verificarFase(self):
         if self.xp < 1000:
