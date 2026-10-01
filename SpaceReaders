@@ -25,14 +25,14 @@ class Fundo:
         
     def draw(self):
         pyxel.rect(int(self.x),int(self.y),self.tamanho,self.tamanho,7) # como as estrelas são quadrados, altura == largura
-        
-        
+
 #Classe responsável pela nave do player
 class Player:
     def __init__(self):
         self.x = largura // 2 # bota a nave no meio da janela capish
         self.y = altura - 50
         self.velocidade = 2.5
+
         #animação fogo da nave
         self.time_animacao = 0
         self.frame_animacao = 0
@@ -54,6 +54,11 @@ class Player:
             self.x = nave // 2
         if self.x > largura - nave // 2:
             self.x = largura - nave // 2
+        if self.y < nave // 2:
+            self.y = nave // 2
+        if self.y > altura - nave // 2:
+            self.y = altura - nave // 2
+        
 
         #animação fogo da nave
         self.time_animacao += 1
@@ -81,7 +86,6 @@ class Disparos:
     def draw(self):
         pyxel.rect(self.x, self.y, 2, 5, 10)
 
-
 class Inimigo:
     def __init__(self,x,y,tipo):
         self.x = x
@@ -108,7 +112,6 @@ class Inimigo:
 
             self.ativo = False
 
-
     def draw(self):
         if not self.ativo:
             return
@@ -116,8 +119,6 @@ class Inimigo:
         sprite_x, sprite_y = self.sprite
 
         pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
-
-
 
 class Jogo:
     def __init__(self):
@@ -142,12 +143,11 @@ class Jogo:
 
         self.inimigos = []
         self.timerSpawn = 0
-        self.tempoSpawn = 70
+        self.tempoSpawn = 40
         self.spawnFinalizado = False
 
 
         pyxel.run(self.update, self.draw)
-
 
     def update(self):
         #fundo
@@ -188,9 +188,8 @@ class Jogo:
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
-        tipo = 1
+        tipo = 3
         self.inimigos.append(Inimigo(x,y,tipo))
-
 
     def draw(self):
         pyxel.cls(0)
