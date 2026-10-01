@@ -97,7 +97,7 @@ class Inimigo:
         if tipo == 1:
             self.vida = 1
             self.velocidade = 0.5
-            self.xp = 100
+            self.xp = 1000
             self.sprite = spriteAlien
         elif tipo == 2:
             self.vida = 2
@@ -212,6 +212,7 @@ class Jogo:
                         if inimigo.vida <= 0:
 
                             inimigo.ativo = False
+                            self.xp += inimigo.xp
                         break
 
         # Remove os inimigos destruídos ou que saíram da tela
