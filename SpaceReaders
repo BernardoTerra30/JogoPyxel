@@ -186,8 +186,30 @@ class Jogo:
 
         pyxel.run(self.update, self.draw)
 
+    def reiniciarJogo(self):
+        self.player = Player()
+        self.xp = 0
+        self.gameOver = False
+
+        self.disparos = []
+        self.tempo_tiro = 0
+        self.disparosInimigos = []
+
+        self.inimigos = []
+        self.timerSpawn = 0
+        self.tempoSpawn = 22
+        self.spawnFinalizado = False
+
+        self.explosoes = []
+
     def update(self):
         if self.gameOver:
+            for explosao in self.explosoes[:]:
+                explosao.update()
+                if not explosao.ativa:
+                    self.explosoes.remove(explosao)
+            if pyxel.btnp(pyxel.KEY_RETURN):
+                self.reiniciarJogo()
             return
         
         #fundo
@@ -296,7 +318,7 @@ class Jogo:
                 self.player.y - 8 < inimigo.y + 8 and
                 self.player.y + 8 > inimigo.y - 8):
 
-                self.receberDano(100)
+                self.receberDano(25)
     
     def criarInimigo(self):
         if self.spawnFinalizado:
@@ -321,15 +343,11 @@ class Jogo:
 
         if self.player.vida <= 0:
             self.player.vida = 0
+            self.explosoes.append(Explosao(self.player.x, self.player.y))
             self.gameOver = True
-    
+
     def draw(self):
         pyxel.cls(0)
-
-        if self.gameOver:
-            pyxel.text(largura // 2 - 24, altura // 2 - 10, "GAME OVER", 8)
-            pyxel.text(largura // 2 - 35, altura // 2 + 5, "XP: " + str(self.xp), 7)
-            return
 
         for fundo in self.estrelas:
             fundo.draw()
@@ -357,6 +375,14 @@ class Jogo:
 
         if larguraVida > 0:
             pyxel.rect(8, altura - 15, larguraVida, 6, 11)
+
+        #tela de game over
+        if self.gameOver:
+            pyxel.text(largura // 2 - 24, altura // 2 - 10, "GAME OVER", 8)
+            pyxel.text(largura // 2 - 35, altura // 2 + 5, "XP: " + str(self.xp), 7)
+            pyxel.text(largura // 2 - 55, altura // 2 + 15, "PRESSIONE ENTER", 10)
+            pyxel.text(largura // 2 - 40, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
+            return
 
 class Explosao:
     def __init__(self, x, y):
