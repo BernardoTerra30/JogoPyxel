@@ -38,6 +38,9 @@ class Player:
         self.time_animacao = 0
         self.frame_animacao = 0
 
+        self.vidaMaxima = 100
+        self.vida = self.vidaMaxima
+
     def update(self):
         #movimentação
         if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
@@ -100,7 +103,7 @@ class Inimigo:
             self.vida = 1
             self.velocidade = 0.5
             self.velocidadeTiro = 1.5
-            self.danoTiro = 1
+            self.danoTiro = 10
             self.xp = 50
             self.sprite = spriteAlien
 
@@ -108,7 +111,7 @@ class Inimigo:
             self.vida = 2
             self.velocidade = 0.7
             self.velocidadeTiro = 2.0
-            self.danoTiro = 2
+            self.danoTiro = 20
             self.xp = 100
             self.sprite = spritePirata
 
@@ -116,7 +119,7 @@ class Inimigo:
             self.vida = 4
             self.velocidade = 1.0
             self.velocidadeTiro = 2.5
-            self.danoTiro = 3
+            self.danoTiro = 30
             self.xp = 150
             self.sprite = spriteUFO
 
@@ -154,6 +157,7 @@ class Jogo:
         #jogador
         self.player = Player()
         self.xp = 0
+        self.gameOver = False
     
         #banco de imagens - sprites
         pyxel.load("Sprites/meu_jogo.pyxres")
@@ -183,6 +187,9 @@ class Jogo:
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        if self.gameOver:
+            return
+        
         #fundo
         for estrela in self.estrelas:
             estrela.update()
@@ -268,14 +275,29 @@ class Jogo:
 
             if tiro.y > altura:
                 self.disparosInimigos.remove(tiro)
+                continue
+
+            if (tiro.x < self.player.x + 8 and
+                tiro.x + 2 > self.player.x - 8 and
+                tiro.y < self.player.y + 8 and
+                tiro.y + 5 > self.player.y - 8):
+
+                self.receberDano(tiro.dano)
+                self.disparosInimigos.remove(tiro)
 
         # Remove os inimigos destruídos ou que saíram da tela
         for inimigo in self.inimigos[:]:
-
             if not inimigo.ativo:
-
                 self.inimigos.remove(inimigo)
+                continue
 
+            if (self.player.x - 8 < inimigo.x + 8 and
+                self.player.x + 8 > inimigo.x - 8 and
+                self.player.y - 8 < inimigo.y + 8 and
+                self.player.y + 8 > inimigo.y - 8):
+
+                self.receberDano(100)
+    
     def criarInimigo(self):
         if self.spawnFinalizado:
 
@@ -293,30 +315,48 @@ class Jogo:
             self.fase = 3
         else: 
             self.spawnFinalizado = True
+
+    def receberDano(self, dano):
+        self.player.vida -= dano
+
+        if self.player.vida <= 0:
+            self.player.vida = 0
+            self.gameOver = True
     
     def draw(self):
         pyxel.cls(0)
 
-        #fundo
+        if self.gameOver:
+            pyxel.text(largura // 2 - 24, altura // 2 - 10, "GAME OVER", 8)
+            pyxel.text(largura // 2 - 35, altura // 2 + 5, "XP: " + str(self.xp), 7)
+            return
+
         for fundo in self.estrelas:
             fundo.draw()
 
         for inimigo in self.inimigos:
             inimigo.draw()
 
-        #desenha as explosões
         for explosao in self.explosoes:
             explosao.draw()
-        
+
         self.player.draw()
 
-        #disparos
         for tiro in self.disparos:
             tiro.draw()
 
-        #disparos inimigos
         for tiro in self.disparosInimigos:
             tiro.draw()
+
+        # HUD - Barra de vida
+        pyxel.text(8, altura - 25, "VIDA", 7)
+
+        pyxel.rect(8, altura - 15, 60, 6, 8)
+
+        larguraVida = int(60 * self.player.vida / self.player.vidaMaxima)
+
+        if larguraVida > 0:
+            pyxel.rect(8, altura - 15, larguraVida, 6, 11)
 
 class Explosao:
     def __init__(self, x, y):
