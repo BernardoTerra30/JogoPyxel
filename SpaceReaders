@@ -126,7 +126,6 @@ class Inimigo:
         self.tempoTiro = 0
         self.intervaloTiro = random.randint(60, 120)
 
-
     def update(self):
         self.y += self.velocidade
         if self.y > altura + nave:
@@ -157,6 +156,9 @@ class Jogo:
         #jogador
         self.player = Player()
         self.xp = 0
+
+        #estados
+        self.menuInicial = True
         self.gameOver = False
     
         #banco de imagens - sprites
@@ -203,6 +205,11 @@ class Jogo:
         self.explosoes = []
 
     def update(self):
+        if self.menuInicial:
+            if pyxel.btnp(pyxel.KEY_RETURN):
+                self.menuInicial = False
+            return
+
         if self.gameOver:
             for explosao in self.explosoes[:]:
                 explosao.update()
@@ -349,6 +356,15 @@ class Jogo:
     def draw(self):
         pyxel.cls(0)
 
+        # Menu
+        if self.menuInicial:
+            for fundo in self.estrelas:
+                fundo.draw()
+            pyxel.text(largura // 2 - 36, 90, "SPACE RAIDERS", 12)
+            pyxel.text(largura // 2 - 43, 125, "PRESSIONE ENTER", 7)
+            pyxel.text(largura // 2 - 39, 140, "PARA COMEÇAR", 7)
+            return
+
         for fundo in self.estrelas:
             fundo.draw()
 
@@ -358,7 +374,8 @@ class Jogo:
         for explosao in self.explosoes:
             explosao.draw()
 
-        self.player.draw()
+        if not self.gameOver:
+            self.player.draw()
 
         for tiro in self.disparos:
             tiro.draw()
