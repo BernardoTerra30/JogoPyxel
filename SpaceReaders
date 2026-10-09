@@ -38,6 +38,10 @@ class Player:
         self.time_animacao = 0
         self.frame_animacao = 0
 
+        #escudo
+        self.escudoTempo = 0
+        self.duracaoEscudo = 300
+
         self.vidaMaxima = 100
         self.vida = self.vidaMaxima
 
@@ -73,11 +77,19 @@ class Player:
             else:
                 self.frame_animacao = 0
 
+        # Tempo de duração do escudo
+        if self.escudoTempo > 0:
+            self.escudoTempo -= 1
+
     def draw(self):
         if self.frame_animacao == 0:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
         else:
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
+
+        # Desenha o escudo
+        if self.escudoTempo > 0:
+            pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 96, nave, nave, 0)
 
 class Disparos:
     def __init__(self, x, y, velocidade, direcao):
@@ -150,9 +162,10 @@ class Inimigo:
         pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
 
 class PowerUp:
-    def __init__(self, x, y):
+    def __init__(self, x, y, tipo="vida"):
         self.x = x
         self.y = y
+        self.tipo = tipo
         self.velocidade = 0.7
         self.ativo = True
 
@@ -166,7 +179,12 @@ class PowerUp:
         if not self.ativo:
             return
 
-        pyxel.blt(int(self.x - 4),int(self.y - 4),0,24, 88,8, 8,0)
+        if self.tipo == "vida":
+            sprite_x, sprite_y = 24, 88
+        elif self.tipo == "escudo":
+            sprite_x, sprite_y = 16, 80
+
+        pyxel.blt(int(self.x - 4), int(self.y - 4), 0, sprite_x, sprite_y, 8, 8, 0)
 
 class Jogo:
     def __init__(self):
@@ -321,10 +339,13 @@ class Jogo:
                             explosao = Explosao(inimigo.x, inimigo.y)
                             self.explosoes.append(explosao)
 
-                            if random.random() < 0.10:
-                                powerUp = PowerUp(inimigo.x, inimigo.y)
-                                self.powerUps.append(powerUp)
-                        break
+                            chanceDrop = random.random()
+
+                            if chanceDrop < 0.10:
+                                self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "vida"))
+                            elif chanceDrop < 0.15:
+                                self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "escudo"))
+                            break
 
         # Atualiza os disparos inimigos
         for tiro in self.disparosInimigos[:]:
@@ -334,8 +355,9 @@ class Jogo:
                 self.disparosInimigos.remove(tiro)
                 continue
 
-            if (tiro.x < self.player.x + 8 and tiro.x + 2 > self.player.x - 8 and tiro.y < self.player.y + 8 and tiro.y + 5 > self.player.y - 8):
-                self.receberDano(tiro.dano)
+            if tiro.x < self.player.x + 8 and tiro.x + 2 > self.player.x - 8 and tiro.y < self.player.y + 8 and tiro.y + 5 > self.player.y - 8:
+                if self.player.escudoTempo <= 0:
+                    self.receberDano(tiro.dano)
                 self.disparosInimigos.remove(tiro)
 
         
@@ -343,14 +365,17 @@ class Jogo:
         for powerUp in self.powerUps[:]:
             powerUp.update()
 
-            # Remove se saiu da tela
             if not powerUp.ativo:
                 self.powerUps.remove(powerUp)
                 continue
 
             # Verifica colisão com o jogador
-            if (powerUp.x - 4 < self.player.x + 8 and powerUp.x + 4 > self.player.x - 8 and powerUp.y - 4 < self.player.y + 8 and powerUp.y + 4 > self.player.y - 8):
-                self.player.vida = min(self.player.vidaMaxima,self.player.vida + 35)
+            if powerUp.x - 4 < self.player.x + 8 and powerUp.x + 4 > self.player.x - 8 and powerUp.y - 4 < self.player.y + 8 and powerUp.y + 4 > self.player.y - 8:
+                if powerUp.tipo == "vida":
+                    self.player.vida = min(self.player.vidaMaxima, self.player.vida + 35)
+                elif powerUp.tipo == "escudo":
+                    self.player.escudoTempo = self.player.duracaoEscudo
+
                 self.powerUps.remove(powerUp)
 
         # Remove os inimigos destruídos ou que saíram da tela
