@@ -194,6 +194,16 @@ class Jogo:
         self.player = Player()
         self.xp = 0
 
+        # Configurações do superaquecimento dos canhões
+        self.calorCanhoes = 0
+        self.calorMaximo = 100
+        self.calorPorDisparo = 2.5
+        self.resfriamentoPorQuadro = 0.6
+        self.tempoSemDisparo = 0
+        self.tempoInicioResfriamento = 15
+        self.duracaoSuperaquecimento = 150
+        self.tempoSuperaquecimento = 0
+
         #estados
         self.menuInicial = True
         self.gameOver = False
@@ -229,8 +239,12 @@ class Jogo:
         pyxel.run(self.update, self.draw)
 
     def reiniciarJogo(self):
+        #reiniciar variáveis
         self.player = Player()
         self.xp = 0
+        self.calorCanhoes = 0
+        self.tempoSemDisparo = 0
+        self.tempoSuperaquecimento = 0
         self.gameOver = False
 
         self.disparos = []
@@ -296,17 +310,43 @@ class Jogo:
         self.player.update()
 
 
-        # Cria um tiro ao segurar apertar espaço e quando o contador zera
-        if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0:
+        # Controla o tempo de superaquecimento
+        if self.tempoSuperaquecimento > 0:
+            self.tempoSuperaquecimento -= 1
 
+            if self.tempoSuperaquecimento == 0:
+                self.calorCanhoes = 0
+                self.tempoSemDisparo = 0
+
+        # Verifica se ocorreu um disparo neste quadro
+        disparou = False
+
+        # Dispara somente se os canhões não estiverem superaquecidos
+        if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0 and self.tempoSuperaquecimento <= 0:
             tiro = Disparos(self.player.x - 1, self.player.y - 13, 4, -1)
             self.disparos.append(tiro)
             self.tempo_tiro = 5
+            disparou = True
 
-        # Diminui a espera a cada atualização
+            # Aumenta o calor a cada disparo
+            self.calorCanhoes += self.calorPorDisparo
+
+            if self.calorCanhoes >= self.calorMaximo:
+                self.calorCanhoes = self.calorMaximo
+                self.tempoSuperaquecimento = self.duracaoSuperaquecimento
+
+        # Diminui a espera entre os disparos
         if self.tempo_tiro > 0:
-            
             self.tempo_tiro -= 1
+
+        # Controla o resfriamento dos canhões
+        if disparou:
+            self.tempoSemDisparo = 0
+        elif self.tempoSuperaquecimento <= 0:
+            self.tempoSemDisparo += 1
+
+            if self.tempoSemDisparo >= self.tempoInicioResfriamento:
+                self.calorCanhoes = max(0, self.calorCanhoes - self.resfriamentoPorQuadro)
 
         # Movimenta os tiros e remove os que saíram da tela
         
@@ -424,9 +464,9 @@ class Jogo:
         if self.menuInicial:
             for fundo in self.estrelas:
                 fundo.draw()
-            pyxel.text(largura // 2 - 36, 90, "SPACE RAIDERS", 12)
-            pyxel.text(largura // 2 - 43, 125, "PRESSIONE ENTER", 7)
-            pyxel.text(largura // 2 - 39, 140, "PARA COMEÇAR", 7)
+            pyxel.text(largura // 2 - 28, 90, "SPACE RAIDERS", 12)
+            pyxel.text(largura // 2 - 30, 125, "PRESSIONE ENTER", 7)
+            pyxel.text(10, altura - 10, "Samuel, Renan e Bernardo - FURG", 7)
             return
 
         for fundo in self.estrelas:
@@ -460,12 +500,30 @@ class Jogo:
         if larguraVida > 0:
             pyxel.rect(8, altura - 15, larguraVida, 6, 11)
 
+        # HUD - Barra de calor dos canhões
+        pyxel.text(8, altura - 42, "CALOR", 7)
+        pyxel.rect(8, altura - 32, 60, 5, 1)
+        larguraCalor = int(60 * self.calorCanhoes / self.calorMaximo)
+        corCalor = 9
+
+        if self.tempoSuperaquecimento > 0:
+            corCalor = 8
+
+        if larguraCalor > 0:
+            pyxel.rect(8, altura - 32, larguraCalor, 5, corCalor)
+
+        # Mensagem de superaquecimento
+        if self.tempoSuperaquecimento > 0 and not self.gameOver:
+            pyxel.text(largura // 2 - 44, altura // 2 - 65, "ARMAS SUPERAQUECIDAS!", 8)
+            pyxel.text(largura // 2 - 23, altura // 2 - 50, "AGUARDE...", 7)
+        
         #tela de game over
         if self.gameOver:
-            pyxel.text(largura // 2 - 24, altura // 2 - 10, "GAME OVER", 8)
-            pyxel.text(largura // 2 - 35, altura // 2 + 5, "XP: " + str(self.xp), 7)
-            pyxel.text(largura // 2 - 55, altura // 2 + 15, "PRESSIONE ENTER", 10)
-            pyxel.text(largura // 2 - 40, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
+            #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
+            pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
+            pyxel.text(largura // 2 - 12, altura // 2 + 5, "XP: " + str(self.xp), 7)
+            pyxel.text(largura // 2 - 26, altura // 2 + 15, "PRESSIONE ENTER", 10)
+            pyxel.text(largura // 2 - 35, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
             return
 
 class Explosao:
