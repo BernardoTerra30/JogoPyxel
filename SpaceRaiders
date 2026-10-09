@@ -210,6 +210,7 @@ class Jogo:
     
         #banco de imagens - sprites
         pyxel.load("Sprites/meu_jogo.pyxres")
+        pyxel.image(2).load(0, 0, "Sprites/space_raiders_logo.png")
 
         #fundo
         self.estrelas = []
@@ -464,9 +465,12 @@ class Jogo:
         if self.menuInicial:
             for fundo in self.estrelas:
                 fundo.draw()
-            pyxel.text(largura // 2 - 28, 90, "SPACE RAIDERS", 12)
+            #pyxel.text(largura // 2 - 28, 90, "SPACE RAIDERS", 12)
+            pyxel.blt(largura // 2 - 40, altura // 2 - 90, 2, 0, 0, 80, 80, 0) #logo
             pyxel.text(largura // 2 - 30, 125, "PRESSIONE ENTER", 7)
             pyxel.text(10, altura - 10, "Samuel, Renan e Bernardo - FURG", 7)
+            pyxel.blt(largura - 20, altura - 20, 1, 40, 0, 16, 16, 0) # furg
+            pyxel.blt(largura - 40, altura - 20, 1, 57, 0, 16, 16, 0) # C3
             return
 
         for fundo in self.estrelas:
@@ -520,7 +524,8 @@ class Jogo:
         #tela de game over
         if self.gameOver:
             #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
-            pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
+            #pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
+            pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
             pyxel.text(largura // 2 - 12, altura // 2 + 5, "XP: " + str(self.xp), 7)
             pyxel.text(largura // 2 - 26, altura // 2 + 15, "PRESSIONE ENTER", 10)
             pyxel.text(largura // 2 - 35, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
