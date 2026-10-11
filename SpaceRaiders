@@ -8,6 +8,7 @@ xpObjetivo = 5000
 spriteAlien = (16,0)
 spritePirata = (32,0)
 spriteUFO = (48,0)
+spriteBoss = (32,32)
 
 
 #Classe para o fundo estrelado:
@@ -135,6 +136,9 @@ class Inimigo:
             self.xp = 150
             self.sprite = spriteUFO
 
+        self.time_animacao = 0
+        self.frame_animacao = 0
+
         self.tempoTiro = 0
         self.intervaloTiro = random.randint(60, 120)
 
@@ -143,6 +147,14 @@ class Inimigo:
         if self.y > altura + nave:
 
             self.ativo = False
+
+        self.time_animacao += 1
+        if self.time_animacao >= 30:
+            self.time_animacao = 0
+            if self.frame_animacao == 0:
+                self.frame_animacao = 1
+            else:
+                self.frame_animacao = 0
 
     def podeAtirar(self):
         self.tempoTiro += 1
@@ -158,8 +170,57 @@ class Inimigo:
             return
 
         sprite_x, sprite_y = self.sprite
+        if self.frame_animacao == 0:
+            pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
+        else:
+            pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y+16, nave, nave, 0)
+         
 
-        pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
+class Boss:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+        self.vida = 50
+        self.velocidade = 0.5
+        self.ativo = True
+        self.esquerda = False
+
+        self.time_animacao = 0
+        self.frame_animacao = 0
+
+    def update(self):
+        if self.y == altura + 16:
+            self.ativo = False
+
+        self.time_animacao += 1
+        if self.time_animacao >= 30:
+            self.time_animacao = 0
+            if self.frame_animacao == 0:
+                self.frame_animacao = 1
+            else:
+                self.frame_animacao = 0
+
+        if self.y < 16:
+            self.y += self.velocidade
+        elif self.esquerda:
+            self.x -= self.velocidade*2
+            if self.x < 8:
+                self.esquerda = False
+        else:
+            self.x += self.velocidade*2
+            if self.x > largura - 8:
+                self.esquerda = True
+            
+    def draw(self):
+        if not self.ativo:
+            return
+        else:
+            sprite_x, sprite_y = spriteBoss
+            if self.frame_animacao == 0:
+                pyxel.blt(self.x - 8, self.y - 16, 0, sprite_x, sprite_y, 16, 32, 0)
+            else:
+                pyxel.blt(self.x - 8, self.y - 16, 0, sprite_x+16, sprite_y, 16, 32, 0)
+
 
 class PowerUp:
     def __init__(self, x, y, tipo="vida"):
@@ -192,7 +253,7 @@ class Jogo:
 
         #jogador
         self.player = Player()
-        self.xp = 0
+        self.xp = 5001
 
         # Configurações do superaquecimento dos canhões
         self.calorCanhoes = 0
@@ -233,6 +294,9 @@ class Jogo:
         self.tempoSpawn = 22
         self.spawnFinalizado = False
 
+        #boss
+        self.boss = Boss(largura // 2, -16)
+
         #explosões
         self.explosoes = []
 
@@ -259,6 +323,8 @@ class Jogo:
         self.tempoSpawn = 22
         self.spawnFinalizado = False
 
+        self.boss = Boss(largura // 2, -16)
+        
         self.explosoes = []
 
     def update(self):
@@ -293,6 +359,8 @@ class Jogo:
             if self.timerSpawn >= self.tempoSpawn:
                 self.timerSpawn = 0
                 self.criarInimigo()
+        else:
+            self.boss.update()
 
         for inimigo in self.inimigos:
             inimigo.update()
@@ -307,6 +375,7 @@ class Jogo:
 
                 tiro.dano = inimigo.danoTiro
                 self.disparosInimigos.append(tiro)
+
         
         self.player.update()
 
@@ -362,6 +431,19 @@ class Jogo:
                 self.disparos.remove(tiro)
                 continue
 
+
+            if self.boss.ativo:
+                if tiro.x < self.boss.x + 8 and tiro.x + 2 > self.boss.x - 8 and tiro.y < self.boss.y + 16 and tiro.y + 5 > self.boss.y - 16:
+                    self.boss.vida -= 1
+                    self.disparos.remove(tiro)
+                      
+                    if self.boss.vida <= 0:
+                        self.boss.ativo = False
+#                       self.xp += GANHOU!!!!!!!!!!!!!!!!!!
+
+                        explosao = Explosao(self.boss.x, self.boss.y)
+                        self.explosoes.append(explosao)
+            
             # Verifica se o tiro acertou algum inimigo
             for inimigo in self.inimigos:
 
@@ -387,6 +469,8 @@ class Jogo:
                             elif chanceDrop < 0.15:
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "escudo"))
                             break
+
+
 
         # Atualiza os disparos inimigos
         for tiro in self.disparosInimigos[:]:
@@ -419,6 +503,13 @@ class Jogo:
 
                 self.powerUps.remove(powerUp)
 
+        if (self.player.x - 8 < self.boss.x + 8 and
+            self.player.x + 8 > self.boss.x - 8 and
+            self.player.y - 8 < self.boss.y + 8 and
+            self.player.y + 8 > self.boss.y - 8):
+
+            self.receberDano(25)
+
         # Remove os inimigos destruídos ou que saíram da tela
         for inimigo in self.inimigos[:]:
             if not inimigo.ativo:
@@ -439,7 +530,7 @@ class Jogo:
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
         self.inimigos.append(Inimigo(x,y,self.fase))
-
+                
     def verificarFase(self):
         if self.xp < 1000:
             self.fase = 1
@@ -478,6 +569,8 @@ class Jogo:
 
         for inimigo in self.inimigos:
             inimigo.draw()
+
+        self.boss.draw()
 
         for powerUp in self.powerUps:
             powerUp.draw()
