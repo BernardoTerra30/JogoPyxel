@@ -306,6 +306,8 @@ class Jogo:
 
         #estados
         self.menuInicial = True
+        self.menuDificuldade = False
+        self.botoes = [("FACIL", 35, 110), ("MEDIO", 22, 140), ("DIFICIL", 14, 170)]
         self.gameOver = False
     
         #banco de imagens - sprites
@@ -367,10 +369,25 @@ class Jogo:
         
         self.explosoes = []
 
+        self.menuInicial = True
+
     def update(self):
         if self.menuInicial:
             if pyxel.btnp(pyxel.KEY_RETURN):
                 self.menuInicial = False
+                self.menuDificuldade = True
+                pyxel.mouse(True)
+            return
+
+        if self.menuDificuldade:
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                for texto, spawn, y in self.botoes:
+                    x = largura // 2 - 40
+                    if x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20:
+                        self.tempoSpawn = spawn
+                        self.menuDificuldade = False
+                        pyxel.mouse(False)   # esconde o cursor no jogo
+                        break
             return
 
         if self.gameOver:
@@ -677,6 +694,18 @@ class Jogo:
             pyxel.text(10, altura - 10, "Samuel, Renan e Bernardo - FURG", 7)
             pyxel.blt(largura - 20, altura - 20, 1, 40, 0, 16, 16, 0) # furg
             pyxel.blt(largura - 40, altura - 20, 1, 57, 0, 16, 16, 0) # C3
+            return
+
+        if self.menuDificuldade:
+            for fundo in self.estrelas:
+                fundo.draw()
+            pyxel.text(largura // 2 - 42, 85, "ESCOLHA A DIFICULDADE", 7)
+            for texto, spawn, y in self.botoes:
+                x = largura // 2 - 40
+                sobre = x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20
+                cor = 10 if sobre else 7      # destaca o botão sob o mouse
+                pyxel.rectb(x, y, 80, 20, cor)
+                pyxel.text(largura // 2 - len(texto) * 2, y + 7, texto, cor)
             return
 
         for fundo in self.estrelas:
