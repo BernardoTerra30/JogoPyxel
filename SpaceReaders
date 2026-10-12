@@ -102,39 +102,25 @@ class Inimigo:
         if tipo == 1:
             self.vida = 1
             self.velocidade = 0.5
-<<<<<<< HEAD
-=======
             self.velocidadeTiro = 1.5
             self.danoTiro = 10
->>>>>>> main
             self.xp = 50
             self.sprite = spriteAlien
 
         elif tipo == 2:
             self.vida = 2
-<<<<<<< HEAD
-            self.velocidade = 0.6
-            self.xp = 70
-=======
             self.velocidade = 0.7
             self.velocidadeTiro = 2.0
             self.danoTiro = 20
             self.xp = 100
->>>>>>> main
             self.sprite = spritePirata
 
         elif tipo == 3:
-<<<<<<< HEAD
-            self.vida = 3
-            self.velocidade = 0.9
-            self.xp = 100
-=======
             self.vida = 4
             self.velocidade = 1.0
             self.velocidadeTiro = 2.5
             self.danoTiro = 30
             self.xp = 150
->>>>>>> main
             self.sprite = spriteUFO
 
         self.tempoTiro = 0
