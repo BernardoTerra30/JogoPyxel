@@ -188,6 +188,11 @@ class Boss:
         self.time_animacao = 0
         self.frame_animacao = 0
 
+        self.tempoTiro = 0
+
+        self.tempoHabilidade = 0
+        self.intervaloHabilidade = 200
+
     def update(self):
         if self.y == altura + 16:
             self.ativo = False
@@ -199,7 +204,7 @@ class Boss:
                 self.frame_animacao = 1
             else:
                 self.frame_animacao = 0
-
+    
         if self.y < 16:
             self.y += self.velocidade
         elif self.esquerda:
@@ -210,7 +215,31 @@ class Boss:
             self.x += self.velocidade*2
             if self.x > largura - 8:
                 self.esquerda = True
-            
+
+    def habilidade(self):
+        self.tempoHabilidade += 1
+
+        if self.vida > self.vida//2:
+            if self.tempoHabilidade >= self.intervaloHabilidade:
+                self.tempoHabilidade = 0
+                return True
+            return False
+        else:
+            if self.tempoHabilidade >= self.intervaloHabilidade//2:
+                self.tempoHabilidade = 0
+                return True
+            return False
+        
+
+    def atirar(self):
+        self.tempoTiro += 1
+
+        if self.tempoTiro >= random.randint(30,50):
+            self.tempoTiro = 0
+            return True
+        return False
+    
+    
     def draw(self):
         if not self.ativo:
             return
@@ -253,7 +282,7 @@ class Jogo:
 
         #jogador
         self.player = Player()
-        self.xp = 5001
+        self.xp = 0
 
         # Configurações do superaquecimento dos canhões
         self.calorCanhoes = 0
@@ -296,6 +325,7 @@ class Jogo:
 
         #boss
         self.boss = Boss(largura // 2, -16)
+        self.lasers = []
 
         #explosões
         self.explosoes = []
@@ -324,6 +354,7 @@ class Jogo:
         self.spawnFinalizado = False
 
         self.boss = Boss(largura // 2, -16)
+        self.lasers = []
         
         self.explosoes = []
 
@@ -354,13 +385,31 @@ class Jogo:
             if not explosao.ativa:
                 self.explosoes.remove(explosao)
 
+        for laser in self.lasers[:]:
+            laser.update()
+
+            if not laser.ativa:
+                self.lasers.remove(laser)
+                continue
+
+            if laser.disparado and not laser.danoAplicado:
+                acertou = (
+                    self.player.x + 8 > laser.x - laser.largura // 2 and
+                    self.player.x - 8 < laser.x + laser.largura // 2 and
+                    self.player.y + 8 > laser.y
+                )
+                if acertou:
+                    if self.player.escudoTempo <= 0:
+                        self.receberDano(25)
+                    laser.danoAplicado = True
+
         if not self.spawnFinalizado:
             self.timerSpawn += 1
             if self.timerSpawn >= self.tempoSpawn:
                 self.timerSpawn = 0
                 self.criarInimigo()
         else:
-            self.boss.update()
+            self.chefeAcoes()
 
         for inimigo in self.inimigos:
             inimigo.update()
@@ -549,6 +598,33 @@ class Jogo:
             self.explosoes.append(Explosao(self.player.x, self.player.y))
             self.gameOver = True
 
+    def chefeAcoes(self):
+
+        self.boss.update()
+        self.timerSpawn += 1
+
+        if self.boss.ativo and self.boss.atirar():
+            tiro = Disparos(self.boss.x - 5, self.boss.y + 16, 3, 1)
+            tiro.dano = 10
+            self.disparosInimigos.append(tiro)
+            tiro = Disparos(self.boss.x + 4, self.boss.y + 16, 3, 1)
+            tiro.dano = 10
+            self.disparosInimigos.append(tiro)
+
+        if self.boss.ativo and self.timerSpawn > self.tempoSpawn*2:
+            x = random.randint(nave//2, largura - nave//2)
+            y = -nave//2
+            self.inimigos.append(Inimigo(x,y,2))
+            self.timerSpawn = 0
+            
+
+        if self.boss.ativo and self.boss.habilidade():
+                #Laser
+                for i in range(4):
+                    x = random.randint(8, largura - 8)
+                    self.lasers.append(Laser(x))
+
+
     def draw(self):
         pyxel.cls(0)
 
@@ -577,6 +653,9 @@ class Jogo:
 
         for explosao in self.explosoes:
             explosao.draw()
+
+        for laser in self.lasers:
+            laser.draw()
 
         if not self.gameOver:
             self.player.draw()
@@ -668,5 +747,78 @@ class Explosao:
             nave,
             0
         )
+
+class Laser:
+    def __init__(self, x):
+        self.x = x
+        self.y = 28
+        self.largura = 16
+
+        #Organizando o disparo
+        self.tempoAviso = 35
+        self.duracaoDisparo = 45
+        self.tempo = 0
+        self.disparado = False
+        self.ativa = True
+        self.danoAplicado = False
+
+        self.quadro = 0
+        self.tempo2 = 0
+        self.velocidadeAnimacao = 5
+
+
+    def update(self):
+        self.tempo += 1
+
+        # Depois do aviso, o feixe fica ativo por alguns quadros.
+        if self.tempo >= self.tempoAviso:
+            self.disparado = True
+            self.y = 0
+            self.tempo2 += 1
+            if self.quadro < 3 and self.tempo2 >= self.velocidadeAnimacao:
+                self.quadro += 1
+                self.tempo2 = 0
+
+        if self.tempo >= self.tempoAviso + self.duracaoDisparo:
+            self.ativa = False
+
+    def draw(self):
+        if not self.ativa:
+            return
+
+        if not self.disparado:
+            # Sprite do aviso
+            pyxel.blt(self.x - nave//2, self.y - nave//2, 0, 16, 32 , 16 , 16 , 0)
+        else:
+            # Raio laser
+            if self.quadro == 0:
+                pyxel.rect(
+                    int(self.x - self.largura // 8), int(self.y),
+                    4, altura - int(self.y), 12
+                )
+            elif self.quadro == 1:
+                pyxel.rect(
+                    int(self.x - self.largura // 4), int(self.y),
+                    8, altura - int(self.y), 12
+                )
+            elif self.quadro == 2:
+                pyxel.rect(
+                    int(self.x - (self.largura-10)), int(self.y),
+                    12, altura - int(self.y), 12
+                )
+                pyxel.rect(
+                    int(self.x - 2 // 2), int(self.y),
+                    2, altura - int(self.y), 7
+                )
+            else: 
+                pyxel.rect(
+                    int(self.x - self.largura // 2), int(self.y),
+                    16, altura - int(self.y), 12
+                )
+                pyxel.rect(
+                    int(self.x - 10 // 2), int(self.y),
+                    10, altura - int(self.y), 7
+                )
+
 
 Jogo()
