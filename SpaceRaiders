@@ -290,6 +290,8 @@ class Jogo:
     def __init__(self):
         pyxel.init(largura, altura, title = 'SpaceRaiders')
 
+        pyxel.mouse(True)   # cursor visível no menu
+
         #jogador
         self.player = Player()
         self.xp = 0
@@ -307,6 +309,13 @@ class Jogo:
         #estados
         self.menuInicial = True
         self.menuDificuldade = False
+        self.historia = 0   # 0 = fora da história, 1 e 2 = quadros
+        self.textosHistoria = [
+            (0, 24, ["O planeta Ukalih contratou",
+                     "voce para protege-lo"]),
+            (16, 24, ["Uma ponte se abriu proximo de Ukalih,",
+                      "proteja-o dos inimigos"]),
+        ]
         self.botoes = [("FACIL", 35, 110), ("MEDIO", 22, 140), ("DIFICIL", 14, 170)]
         self.gameOver = False
     
@@ -370,13 +379,24 @@ class Jogo:
         self.explosoes = []
 
         self.menuInicial = True
+        pyxel.mouse(True)
 
     def update(self):
+        if self.historia > 0:
+            if pyxel.btnp(pyxel.KEY_RETURN):
+                self.historia += 1
+                if self.historia > 2:
+                    self.historia = 0   # volta ao menu
+            return
+        
         if self.menuInicial:
             if pyxel.btnp(pyxel.KEY_RETURN):
                 self.menuInicial = False
                 self.menuDificuldade = True
                 pyxel.mouse(True)
+            elif pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                if largura // 2 - 40 <= pyxel.mouse_x <= largura // 2 + 40 and 145 <= pyxel.mouse_y <= 165:
+                    self.historia = 1
             return
 
         if self.menuDificuldade:
@@ -684,6 +704,20 @@ class Jogo:
     def draw(self):
         pyxel.cls(0)
 
+        #História
+        if self.historia > 0:
+            for fundo in self.estrelas:
+                fundo.draw()
+            sx, sy, linhas = self.textosHistoria[self.historia - 1]
+            pyxel.blt(largura // 2 - 8, 60, 1, sx, sy, 16, 16, 0, 0, 2)
+            for i, linha in enumerate(linhas):
+                pyxel.text(largura // 2 - len(linha) * 2, 90 + i * 10, linha, 7)
+            if self.historia == 1:
+                pyxel.text(largura // 2 - 40, altura - 30, "ENTER PARA CONTINUAR", 7)
+            else:
+                pyxel.text(largura // 2 - 36, altura - 30, "ENTER PARA VOLTAR", 7)
+            return
+
         # Menu
         if self.menuInicial:
             for fundo in self.estrelas:
@@ -694,6 +728,10 @@ class Jogo:
             pyxel.text(10, altura - 10, "Samuel, Renan e Bernardo - FURG", 7)
             pyxel.blt(largura - 20, altura - 20, 1, 40, 0, 16, 16, 0) # furg
             pyxel.blt(largura - 40, altura - 20, 1, 57, 0, 16, 16, 0) # C3
+            sobre = largura // 2 - 40 <= pyxel.mouse_x <= largura // 2 + 40 and 145 <= pyxel.mouse_y <= 165
+            cor = 10 if sobre else 7
+            pyxel.rectb(largura // 2 - 40, 145, 80, 20, cor)
+            pyxel.text(largura // 2 - 16, 152, "HISTORIA", cor)
             return
 
         if self.menuDificuldade:
@@ -767,9 +805,14 @@ class Jogo:
         
         #tela de game over
         if self.gameOver:
+            # caixa preta atrás da sprite e dos textos
+            pyxel.rect(largura // 2 - 50, altura // 2 - 80, 105, 120, 0)
+            pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 105, 120, 7)
+            pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
+            pyxel.blt(largura // 2 - 8, 70, 1, 0, 56, 16, 16, 0, 0, 2) #planeta
             #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
             #pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
-            pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
+            #pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
             pyxel.text(largura // 2 - 12, altura // 2 + 5, "XP: " + str(self.xp), 7)
             pyxel.text(largura // 2 - 26, altura // 2 + 15, "PRESSIONE ENTER", 10)
             pyxel.text(largura // 2 - 35, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
