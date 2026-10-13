@@ -190,7 +190,8 @@ class Boss:
     def __init__(self,x,y):
         self.x = x
         self.y = y
-        self.vida = 50
+        self.vidaMaxima = 50
+        self.vida = self.vidaMaxima
         self.velocidade = 0.5
         self.ativo = True
         self.esquerda = False
@@ -207,9 +208,6 @@ class Boss:
         self.recargaColisao = 0
 
     def update(self):
-        if self.y == altura + 16:
-            self.ativo = False
-
         self.time_animacao += 1
         if self.time_animacao >= 30:
             self.time_animacao = 0
@@ -232,7 +230,7 @@ class Boss:
     def habilidade(self):
         self.tempoHabilidade += 1
 
-        if self.vida > self.vida//2:
+        if self.vida > self.vidaMaxima // 2:
             if self.tempoHabilidade >= self.intervaloHabilidade:
                 self.tempoHabilidade = 0
                 return True
@@ -532,10 +530,10 @@ class Jogo:
                       
                     if self.boss.vida <= 0:
                         self.boss.ativo = False
-                        #self.xp += GANHOU!!!!!!!!!!!!!!!!!!
 
                         explosao = Explosao(self.boss.x, self.boss.y)
                         self.explosoes.append(explosao)
+                        continue
             
             # Verifica se o tiro acertou algum inimigo
             for inimigo in self.inimigos:
@@ -561,7 +559,7 @@ class Jogo:
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "vida"))
                             elif chanceDrop < 0.15:
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "escudo"))
-                            break
+                        break
 
         # Atualiza os disparos inimigos
         for tiro in self.disparosInimigos[:]:
@@ -662,6 +660,8 @@ class Jogo:
             self.spawnFinalizado = True
 
     def receberDano(self, dano, colisao=False):
+        if self.gameOver: #garantir que não ocorra dano após o game-over
+            return
         if colisao:
             if self.player.invulTempo > 0:
                 return
@@ -807,7 +807,7 @@ class Jogo:
         if self.gameOver:
             # caixa preta atrás da sprite e dos textos
             pyxel.rect(largura // 2 - 50, altura // 2 - 80, 105, 120, 0)
-            pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 105, 120, 7)
+            pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 100, 120, 7)
             pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
             pyxel.blt(largura // 2 - 8, 70, 1, 0, 56, 16, 16, 0, 0, 2) #planeta
             #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
@@ -815,7 +815,7 @@ class Jogo:
             #pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
             pyxel.text(largura // 2 - 12, altura // 2 + 5, "XP: " + str(self.xp), 7)
             pyxel.text(largura // 2 - 26, altura // 2 + 15, "PRESSIONE ENTER", 10)
-            pyxel.text(largura // 2 - 35, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
+            pyxel.text(largura // 2 - 40, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
             return
 
 class Explosao:
