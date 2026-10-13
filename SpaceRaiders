@@ -310,12 +310,15 @@ class Jogo:
         self.historia = 0   # 0 = fora da história, 1 e 2 = quadros
         self.textosHistoria = [
             (0, 24, ["O planeta Ukalih contratou",
-                     "voce para protege-lo"]),
+                     "voce para protege-lo",
+                     "as tropas do planeta são limitadas!"]),
             (16, 24, ["Uma ponte se abriu proximo de Ukalih,",
-                      "proteja-o dos inimigos"]),
+                      "proteja o planeta dos inimigos",
+                      "Nao deixe as naves passarem!!"]),
         ]
         self.botoes = [("FACIL", 35, 110), ("MEDIO", 22, 140), ("DIFICIL", 14, 170)]
         self.gameOver = False
+        self.vitoria = False
     
         #banco de imagens - sprites
         pyxel.load("Sprites/meu_jogo.pyxres")
@@ -359,6 +362,7 @@ class Jogo:
         self.tempoSemDisparo = 0
         self.tempoSuperaquecimento = 0
         self.gameOver = False
+        self.vitoria = False
 
         self.disparos = []
         self.tempo_tiro = 0
@@ -388,13 +392,14 @@ class Jogo:
             return
         
         if self.menuInicial:
-            if pyxel.btnp(pyxel.KEY_RETURN):
-                self.menuInicial = False
-                self.menuDificuldade = True
-                pyxel.mouse(True)
-            elif pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                if largura // 2 - 40 <= pyxel.mouse_x <= largura // 2 + 40 and 145 <= pyxel.mouse_y <= 165:
-                    self.historia = 1
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                x = largura // 2 - 40
+                if x <= pyxel.mouse_x <= x + 80:
+                    if 125 <= pyxel.mouse_y <= 145:
+                        self.menuInicial = False
+                        self.menuDificuldade = True
+                    elif 150 <= pyxel.mouse_y <= 170:
+                        self.historia = 1
             return
 
         if self.menuDificuldade:
@@ -408,7 +413,7 @@ class Jogo:
                         break
             return
 
-        if self.gameOver:
+        if self.gameOver or self.vitoria:
             for explosao in self.explosoes[:]:
                 explosao.update()
                 if not explosao.ativa:
@@ -530,6 +535,7 @@ class Jogo:
                       
                     if self.boss.vida <= 0:
                         self.boss.ativo = False
+                        self.vitoria = True
 
                         explosao = Explosao(self.boss.x, self.boss.y)
                         self.explosoes.append(explosao)
@@ -633,6 +639,8 @@ class Jogo:
             return
         alvo.ativo = False
         self.explosoes.append(Explosao(alvo.x, alvo.y))
+        if alvo is self.boss:
+            self.vitoria = True
         if alvo is not self.boss:
             self.xp += alvo.xp
             chanceDrop = random.random()
@@ -643,7 +651,6 @@ class Jogo:
     
     def criarInimigo(self):
         if self.spawnFinalizado:
-
             return
         x = random.randint(nave // 2, largura - nave // 2)
         y = -nave//2
@@ -660,13 +667,15 @@ class Jogo:
             self.spawnFinalizado = True
 
     def receberDano(self, dano, colisao=False):
+        if self.vitoria:
+            return
         if self.gameOver: #garantir que não ocorra dano após o game-over
             return
         if colisao:
             if self.player.invulTempo > 0:
                 return
-            self.player.invulTempo = 90    # 3 s de imunidade a colisões
-            self.player.avisoColisao = 60  # mensagem por 2 s
+            self.player.invulTempo = 45    
+            self.player.avisoColisao = 30
 
         self.player.vida -= dano
 
@@ -676,7 +685,6 @@ class Jogo:
             self.gameOver = True
 
     def chefeAcoes(self):
-
         self.boss.update()
         self.timerSpawn += 1
 
@@ -694,7 +702,6 @@ class Jogo:
             self.inimigos.append(Inimigo(x,y,2))
             self.timerSpawn = 0
             
-
         if self.boss.ativo and self.boss.habilidade():
                 #Laser
                 for i in range(4):
@@ -703,6 +710,14 @@ class Jogo:
 
     def draw(self):
         pyxel.cls(0)
+
+        # tela de vitória
+        if self.vitoria:
+            pyxel.cls(7)
+            pyxel.blt(largura // 2 - 13, 68, 1, 0, 72, 26, 32, 0, 0, 3) #sprite vitoria
+            pyxel.text(largura // 2 - 30, altura // 2 + 30, "PRESSIONE ENTER", 0)
+            pyxel.text(largura // 2 - 38, altura // 2 + 40, "PARA VOLTAR AO MENU", 0)
+            return
 
         #História
         if self.historia > 0:
@@ -724,14 +739,15 @@ class Jogo:
                 fundo.draw()
             #pyxel.text(largura // 2 - 28, 90, "SPACE RAIDERS", 12)
             pyxel.blt(largura // 2 - 40, altura // 2 - 90, 2, 0, 0, 80, 80, 0) #logo
-            pyxel.text(largura // 2 - 30, 125, "PRESSIONE ENTER", 7)
-            pyxel.text(10, altura - 10, "Samuel, Renan e Bernardo - FURG", 7)
+            pyxel.text(10, altura - 10, "Bernardo, Renan e Samuel - FURG", 7)
             pyxel.blt(largura - 20, altura - 20, 1, 40, 0, 16, 16, 0) # furg
             pyxel.blt(largura - 40, altura - 20, 1, 57, 0, 16, 16, 0) # C3
-            sobre = largura // 2 - 40 <= pyxel.mouse_x <= largura // 2 + 40 and 145 <= pyxel.mouse_y <= 165
-            cor = 10 if sobre else 7
-            pyxel.rectb(largura // 2 - 40, 145, 80, 20, cor)
-            pyxel.text(largura // 2 - 16, 152, "HISTORIA", cor)
+            for texto, y in (("INICIAR JOGO", 125), ("HISTORIA", 150)):
+                x = largura // 2 - 40
+                sobre = x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20
+                cor = 10 if sobre else 7
+                pyxel.rectb(x, y, 80, 20, cor)
+                pyxel.text(largura // 2 - len(texto) * 2, y + 7, texto, cor)
             return
 
         if self.menuDificuldade:
@@ -741,7 +757,7 @@ class Jogo:
             for texto, spawn, y in self.botoes:
                 x = largura // 2 - 40
                 sobre = x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20
-                cor = 10 if sobre else 7      # destaca o botão sob o mouse
+                cor = 10 if sobre else 7
                 pyxel.rectb(x, y, 80, 20, cor)
                 pyxel.text(largura // 2 - len(texto) * 2, y + 7, texto, cor)
             return
@@ -807,15 +823,16 @@ class Jogo:
         if self.gameOver:
             # caixa preta atrás da sprite e dos textos
             pyxel.rect(largura // 2 - 50, altura // 2 - 80, 105, 120, 0)
-            pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 100, 120, 7)
-            pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
-            pyxel.blt(largura // 2 - 8, 70, 1, 0, 56, 16, 16, 0, 0, 2) #planeta
+            #pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 100, 120, 7) moldura branca
+            pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0, 0, 3)
+            #pyxel.blt(largura, altura, 1, 0, 72, 26, 32, 0, rotação, escala) base
+            pyxel.blt(largura // 2 - 8, 40, 1, 0, 56, 16, 16, 0, 0, 2) #planeta
             #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
             #pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
             #pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
-            pyxel.text(largura // 2 - 12, altura // 2 + 5, "XP: " + str(self.xp), 7)
-            pyxel.text(largura // 2 - 26, altura // 2 + 15, "PRESSIONE ENTER", 10)
-            pyxel.text(largura // 2 - 40, altura // 2 + 25, "PARA JOGAR NOVAMENTE", 10)
+            pyxel.text(largura // 2 - 12, altura // 2 + 30, "XP: " + str(self.xp), 7)
+            pyxel.text(largura // 2 - 26, altura // 2 + 40, "PRESSIONE ENTER", 10)
+            pyxel.text(largura // 2 - 40, altura // 2 + 50, "PARA JOGAR NOVAMENTE", 10)
             return
 
 class Explosao:
