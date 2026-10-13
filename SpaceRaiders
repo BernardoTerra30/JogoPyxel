@@ -1,26 +1,16 @@
 import pyxel
-
 import random
 
-# Bernardo: estrutura inicial - tamanho da janela e da nave
 altura = 256
-
 largura = 240
-
 nave = 16
-
 xpObjetivo = 5000
-
 spriteAlien = (16,0)
-
 spritePirata = (32,0)
-
 spriteUFO = (48,0)
-
 spriteBoss = (32,32)
 
 #Classe para o fundo estrelado:
-
 class Fundo:
 
     def __init__(self):
@@ -48,12 +38,11 @@ class Fundo:
         pyxel.rect(int(self.x),int(self.y),self.tamanho,self.tamanho,7) # como as estrelas são quadrados, altura == largura
 
 #Classe responsável pela nave do player
-
 class Player:
 
     def __init__(self):
 
-        # Bernardo: posicao inicial e velocidade da nave
+        #  posicao inicial e velocidade da nave
         self.x = largura // 2 # bota a nave no meio da janela capish
 
         self.y = altura - 50
@@ -66,18 +55,18 @@ class Player:
 
         self.frame_animacao = 0
 
-        # Bernardo: configuracao do power-up de escudo
+        #  configuracao do power-up de escudo
         #escudo
 
         self.escudoTempo = 0
 
         self.duracaoEscudo = 300
 
-        # Bernardo: tempo de duracao do power-up de tiro duplo
+        #  tempo de duracao do power-up de tiro duplo
         self.tempoTiroDuplo = 0
         self.duracaoTiroDuplo = 300
 
-        # Bernardo: vida da nave e contadores usados nas colisoes
+        #  vida da nave e contadores usados nas colisoes
         self.vidaMaxima = 100
 
         self.vida = self.vidaMaxima
@@ -87,27 +76,20 @@ class Player:
         self.avisoColisao = 0
 
     def update(self):
-
-        # Bernardo: movimentacao da nave pelo teclado
         #movimentação
 
         if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
-
             self.x -= self.velocidade
 
         if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
-
             self.x += self.velocidade
 
         if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W):
-
             self.y -= self.velocidade
 
         if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
-
             self.y += self.velocidade
 
-        # Bernardo: limites da movimentacao da nave
         # Impede sair da tela
 
         if self.x < nave // 2:
@@ -135,18 +117,16 @@ class Player:
             self.time_animacao = 0
 
             if self.frame_animacao == 0:
-
                 self.frame_animacao = 1
 
             else:
-
                 self.frame_animacao = 0
 
-        # Bernardo: diminui o tempo do tiro duplo
+        #  diminui o tempo do tiro duplo
         if self.tempoTiroDuplo > 0:
             self.tempoTiroDuplo -= 1
 
-        # Bernardo: duracao do escudo e protecao temporaria apos uma colisao
+        #  duracao do escudo e protecao temporaria apos uma colisao
 
         if self.escudoTempo > 0:
 
@@ -163,48 +143,36 @@ class Player:
     def draw(self):
 
         if self.frame_animacao == 0:
-
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 0, nave, nave, 0)
 
         else:
-
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 16, nave, nave, 0)
 
-        # Bernardo: mostra o escudo ativo na nave
         # Desenha o escudo
-
         if self.escudoTempo > 0:
-
-            # Bernardo: o escudo pisca quando faltam menos de 2 segundos
+            #  o escudo pisca quando faltam menos de 2 segundos
             if self.escudoTempo > 60 or self.escudoTempo % 10 < 5:
                 pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, 0, 96, nave, nave, 0)
 
-# Bernardo: sistema de disparos - posicao, movimento e desenho dos tiros
 class Disparos:
 
     def __init__(self, x, y, velocidade, direcao):
-
         self.x = x
-
         self.y = y
-
         self.velocidade = velocidade
-
         self.direcao = direcao
 
-        # Bernardo: os tiros normais continuam retos
+        #os tiros normais continuam retos
         self.velocidadeX = 0
 
     def update(self):
-
         self.y += self.velocidade * self.direcao
 
-        # Bernardo: permite que alguns tiros inimigos andem na diagonal
+        #  permite que alguns tiros inimigos andem na diagonal
         self.x += self.velocidadeX
 
     def draw(self):
-
-        # Bernardo: amarelo para o jogador e vermelho para os inimigos
+        #  amarelo para o jogador e vermelho para os inimigos
         if self.direcao == -1:
             pyxel.rect(self.x, self.y, 2, 5, 10)
         else:
@@ -213,277 +181,179 @@ class Disparos:
 class Inimigo:
 
     def __init__(self,x,y,tipo):
-
         self.x = x
-
         self.y = y
-
         self.tipo = tipo
-
         self.ativo = True
 
         if tipo == 1:
-
             self.vida = 1
-
             self.velocidade = 0.7
-
             self.velocidadeTiro = 1.5
-
             self.danoTiro = 10
-
             self.xp = 50
-
             self.sprite = spriteAlien
 
         elif tipo == 2:
-
             self.vida = 1
-
             self.velocidade = 0.7
-
             self.velocidadeTiro = 2.0
-
             self.danoTiro = 20
-
             self.xp = 100
-
             self.sprite = spritePirata
 
         elif tipo == 3:
-
             self.vida = 2
-
             self.velocidade = 0.7
-
             self.velocidadeTiro = 2.5
-
             self.danoTiro = 30
-
             self.xp = 150
-
             self.sprite = spriteUFO
 
         self.time_animacao = 0
-
         self.frame_animacao = 0
-
         self.tempoTiro = 0
-
         self.intervaloTiro = random.randint(60, 120)
 
         #colisão
-
         self.recargaColisao = 0
 
     def update(self):
-
         self.y += self.velocidade
 
         if self.y > altura + nave:
-
             self.ativo = False
 
         self.time_animacao += 1
 
         if self.time_animacao >= 30:
-
             self.time_animacao = 0
 
             if self.frame_animacao == 0:
-
                 self.frame_animacao = 1
 
             else:
-
                 self.frame_animacao = 0
 
     def podeAtirar(self):
-
-        # Bernardo: o inimigo so atira quando esta dentro da tela
         if self.y < 8 or self.y > altura - 8:
             return False
 
         self.tempoTiro += 1
 
         if self.tempoTiro >= self.intervaloTiro:
-
             self.tempoTiro = 0
-
             self.intervaloTiro = random.randint(60, 120)
-
             return True
-
         return False
 
     def draw(self):
-
         if not self.ativo:
-
             return
 
         sprite_x, sprite_y = self.sprite
 
         if self.frame_animacao == 0:
-
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y, nave, nave, 0)
 
         else:
-
             pyxel.blt(self.x - nave // 2, self.y - nave // 2, 0, sprite_x, sprite_y+16, nave, nave, 0)
 
 class Boss:
 
     def __init__(self,x,y):
-
         self.x = x
-
         self.y = y
-
         self.vidaMaxima = 50
-
         self.vida = self.vidaMaxima
-
         self.velocidade = 0.5
-
         self.ativo = True
-
         self.esquerda = False
-
         self.time_animacao = 0
-
         self.frame_animacao = 0
-
         self.tempoTiro = 0
-
         self.tempoHabilidade = 0
-
         self.intervaloHabilidade = 200
 
         #colisão
-
         self.recargaColisao = 0
-
+    
     def update(self):
-
         self.time_animacao += 1
-
         if self.time_animacao >= 30:
-
             self.time_animacao = 0
-
             if self.frame_animacao == 0:
-
                 self.frame_animacao = 1
 
             else:
-
                 self.frame_animacao = 0
 
         if self.y < 16:
-
             self.y += self.velocidade
 
         elif self.esquerda:
-
             self.x -= self.velocidade*2
-
             if self.x < 8:
-
                 self.esquerda = False
 
         else:
-
             self.x += self.velocidade*2
-
             if self.x > largura - 8:
-
                 self.esquerda = True
 
     def habilidade(self):
-
         self.tempoHabilidade += 1
 
         if self.vida > self.vidaMaxima // 2:
-
             if self.tempoHabilidade >= self.intervaloHabilidade:
-
                 self.tempoHabilidade = 0
-
                 return True
-
             return False
 
         else:
-
             if self.tempoHabilidade >= self.intervaloHabilidade//2:
-
                 self.tempoHabilidade = 0
-
                 return True
-
             return False
 
     def atirar(self):
-
         self.tempoTiro += 1
-
         if self.tempoTiro >= random.randint(30,50):
-
             self.tempoTiro = 0
-
             return True
-
         return False
 
     def draw(self):
-
         if not self.ativo:
-
             return
 
         else:
-
             sprite_x, sprite_y = spriteBoss
-
             if self.frame_animacao == 0:
-
                 pyxel.blt(self.x - 8, self.y - 16, 0, sprite_x, sprite_y, 16, 32, 0)
 
             else:
-
                 pyxel.blt(self.x - 8, self.y - 16, 0, sprite_x+16, sprite_y, 16, 32, 0)
 
-# Bernardo: power-ups - movimento e desenho dos itens coletaveis
 class PowerUp:
 
     def __init__(self, x, y, tipo="vida"):
-
         self.x = x
-
         self.y = y
-
         self.tipo = tipo
-
         self.velocidade = 0.7
-
         self.ativo = True
 
     def update(self):
-
         self.y += self.velocidade
-
         if self.y > altura:
-
             self.ativo = False
 
     def draw(self):
-
         if not self.ativo:
-
             return
 
-        # Bernardo: desenha o novo power-up sem precisar de outro sprite
+        #  desenha o novo power-up sem precisar de outro sprite
         if self.tipo == "tiro":
             pyxel.rect(self.x - 4, self.y - 4, 8, 8, 1)
             pyxel.rectb(self.x - 4, self.y - 4, 8, 8, 10)
@@ -492,11 +362,9 @@ class PowerUp:
             return
 
         if self.tipo == "vida":
-
             sprite_x, sprite_y = 24, 88
 
         elif self.tipo == "escudo":
-
             sprite_x, sprite_y = 16, 80
 
         pyxel.blt(int(self.x - 4), int(self.y - 4), 0, sprite_x, sprite_y, 8, 8, 0)
@@ -504,75 +372,48 @@ class PowerUp:
 class Jogo:
 
     def __init__(self):
-
-        # Bernardo: estrutura inicial - cria a janela do jogo
         pyxel.init(largura, altura, title = 'SpaceRaiders')
 
         pyxel.mouse(True)   # cursor visível no menu
 
-        # Bernardo: cria a nave do jogador
         #jogador
-
         self.player = Player()
-
         self.xp = 0
 
         # Configurações do superaquecimento dos canhões
-
         self.calorCanhoes = 0
-
         self.calorMaximo = 100
-
         self.calorPorDisparo = 2.0
-
         self.resfriamentoPorQuadro = 0.6
-
         self.tempoSemDisparo = 0
-
         self.tempoInicioResfriamento = 15
-
         self.duracaoSuperaquecimento = 130
-
         self.tempoSuperaquecimento = 0
 
         #estados
-
         self.menuInicial = True
-
-        # Bernardo: inicia ou reinicia o jogo sem pausa
         self.pausado = False
-
         self.menuDificuldade = False
-
-        self.historia = 0   # 0 = fora da história, 1 e 2 = quadros
+        self.historia = 0
 
         self.textosHistoria = [
-
             (0, 24, ["O planeta Ukalih contratou",
-
                      "voce para protege-lo",
-
                      "as tropas do planeta são limitadas!"]),
 
             (16, 24, ["Uma ponte se abriu proximo de Ukalih,",
-
                       "proteja o planeta dos inimigos",
-
                       "Nao deixe as naves passarem!!"]),
 
         ]
-
         self.botoes = [("FACIL", 35, 110), ("MEDIO", 22, 140), ("DIFICIL", 14, 170)]
-
         self.gameOver = False
-
         self.vitoria = False
 
         #banco de imagens - sprites
-
         pyxel.load("Sprites/meu_jogo.pyxres")
 
-        # Bernardo: efeitos sonoros criados pelo codigo
+        #  efeitos sonoros criados pelo codigo
         # Ordem: notas, timbre, volume, efeito e velocidade
         # Nao salva por cima dos sons do arquivo .pyxres.
         pyxel.sounds[50].set("c4g3c3", "p", "432", "f", 2)
@@ -585,170 +426,102 @@ class Jogo:
         pyxel.image(2).load(0, 0, "Sprites/space_raiders_logo.png")
 
         #fundo
-
         self.estrelas = []
-
         for i in range(70):
-
             self.estrelas.append(Fundo())
 
-        # Bernardo: lista dos power-ups que estao na tela
         #Power Ups
-
         self.powerUps = []
-
-        # Bernardo: lista de tiros da nave e intervalo entre disparos
-        #disparos
-
         self.disparos = []
-
         self.tempo_tiro = 0
 
         #disparos dso inimigos
-
         self.disparosInimigos = []
 
         #inimigos
-
         self.inimigos = []
-
         self.timerSpawn = 0
-
         self.tempoSpawn = 22
-
         self.spawnFinalizado = False
 
         #boss
-
         self.boss = Boss(largura // 2, -16)
-
         self.lasers = []
 
         #explosões
-
         self.explosoes = []
 
-        # Bernardo: estrutura inicial - inicia a atualizacao e o desenho do jogo
         pyxel.run(self.update, self.draw)
 
     def reiniciarJogo(self):
 
         #reiniciar variáveis
-
         self.player = Player()
-
         self.xp = 0
-
         self.calorCanhoes = 0
-
         self.tempoSemDisparo = 0
-
         self.tempoSuperaquecimento = 0
-
         self.gameOver = False
-
         self.vitoria = False
-
         self.disparos = []
-
         self.tempo_tiro = 0
-
         self.disparosInimigos = []
-
         self.powerUps = []
-
         self.inimigos = []
-
         self.timerSpawn = 0
-
         self.tempoSpawn = 22
-
         self.spawnFinalizado = False
-
         self.boss = Boss(largura // 2, -16)
-
         self.lasers = []
-
         self.explosoes = []
-
         self.menuInicial = True
 
-        # Bernardo: inicia ou reinicia o jogo sem pausa
+        #inicia ou reinicia o jogo sem pausa
         self.pausado = False
 
         pyxel.mouse(True)
 
     def update(self):
-
         if self.historia > 0:
-
             if pyxel.btnp(pyxel.KEY_RETURN):
-
                 self.historia += 1
-
                 if self.historia > 2:
-
                     self.historia = 0   # volta ao menu
-
             return
 
         if self.menuInicial:
-
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-
                 x = largura // 2 - 40
-
                 if x <= pyxel.mouse_x <= x + 80:
-
                     if 125 <= pyxel.mouse_y <= 145:
-
                         self.menuInicial = False
-
                         self.menuDificuldade = True
 
                     elif 150 <= pyxel.mouse_y <= 170:
-
                         self.historia = 1
-
             return
 
         if self.menuDificuldade:
-
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-
                 for texto, spawn, y in self.botoes:
-
                     x = largura // 2 - 40
-
                     if x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20:
-
                         self.tempoSpawn = spawn
-
                         self.menuDificuldade = False
-
                         pyxel.mouse(False)   # esconde o cursor no jogo
-
                         break
-
             return
 
         if self.gameOver or self.vitoria:
-
             for explosao in self.explosoes[:]:
-
                 explosao.update()
-
                 if not explosao.ativa:
-
                     self.explosoes.remove(explosao)
-
             if pyxel.btnp(pyxel.KEY_RETURN):
-
                 self.reiniciarJogo()
-
             return
 
-        # Bernardo: P alterna entre pausado e jogando
+        #  P alterna entre pausado e jogando
         if pyxel.btnp(pyxel.KEY_P):
             self.pausado = not self.pausado
             if self.pausado:
@@ -759,90 +532,59 @@ class Jogo:
             return
 
         #fundo
-
         for estrela in self.estrelas:
-
             estrela.update()
-
         self.verificarFase()
 
         #atualiza as explosões
-
         for explosao in self.explosoes[:]:
-
             explosao.update()
-
             if not explosao.ativa:
-
                 self.explosoes.remove(explosao)
 
         for laser in self.lasers[:]:
-
             laser.update()
-
             if not laser.ativa:
-
                 self.lasers.remove(laser)
-
                 continue
 
             if laser.disparado and not laser.danoAplicado:
-
                 acertou = (
-
                     self.player.x + 8 > laser.x - laser.largura // 2 and
-
                     self.player.x - 8 < laser.x + laser.largura // 2 and
-
                     self.player.y + 8 > laser.y
 
                 )
 
                 if acertou:
-
                     if self.player.escudoTempo <= 0:
-
                         self.receberDano(25)
-
                     laser.danoAplicado = True
 
         if not self.spawnFinalizado:
-
             self.timerSpawn += 1
-
             if self.timerSpawn >= self.tempoSpawn:
-
                 self.timerSpawn = 0
-
                 self.criarInimigo()
 
         else:
-
             self.chefeAcoes()
 
         for inimigo in self.inimigos:
-
             inimigo.update()
-
             if inimigo.ativo and inimigo.podeAtirar():
-
                 tiro = Disparos(
-
                     inimigo.x - 1,
-
                     inimigo.y + 8,
-
                     inimigo.velocidadeTiro,
-
                     1
-
                 )
 
                 tiro.dano = inimigo.danoTiro
 
                 self.disparosInimigos.append(tiro)
 
-                # Bernardo: o UFO tambem dispara dois tiros diagonais
+                #  o UFO tambem dispara dois tiros diagonais
                 if inimigo.tipo == 3:
                     tiro = Disparos(inimigo.x - 5, inimigo.y + 8, inimigo.velocidadeTiro, 1)
                     tiro.dano = inimigo.danoTiro
@@ -854,31 +596,24 @@ class Jogo:
                     tiro.velocidadeX = 0.6
                     self.disparosInimigos.append(tiro)
 
-        # Bernardo: atualiza a movimentacao e os contadores da nave
+        #  atualiza a movimentacao e os contadores da nave
         self.player.update()
 
         # Controla o tempo de superaquecimento
-
         if self.tempoSuperaquecimento > 0:
-
             self.tempoSuperaquecimento -= 1
-
             if self.tempoSuperaquecimento == 0:
-
                 self.calorCanhoes = 0
-
                 self.tempoSemDisparo = 0
 
         # Verifica se ocorreu um disparo neste quadro
-
         disparou = False
 
-        # Bernardo: disparo continuo da nave ao segurar espaco
+        #  disparo continuo da nave ao segurar espaco
         # Dispara somente se os canhões não estiverem superaquecidos
 
         if pyxel.btn(pyxel.KEY_SPACE) and self.tempo_tiro == 0 and self.tempoSuperaquecimento <= 0:
-
-            # Bernardo: com o power-up saem dois tiros, um de cada lado
+            #  com o power-up saem dois tiros, um de cada lado
             if self.player.tempoTiroDuplo > 0:
                 tiro = Disparos(self.player.x - 5, self.player.y - 13, 4, -1)
                 self.disparos.append(tiro)
@@ -889,551 +624,359 @@ class Jogo:
                 tiro = Disparos(self.player.x - 1, self.player.y - 13, 4, -1)
                 self.disparos.append(tiro)
 
-            # Bernardo: som do disparo
+            #  som do disparo
             pyxel.play(0, 50)
-
             self.tempo_tiro = 5
-
             disparou = True
 
             # Aumenta o calor a cada disparo
-
             self.calorCanhoes += self.calorPorDisparo
-
             if self.calorCanhoes >= self.calorMaximo:
-
                 self.calorCanhoes = self.calorMaximo
-
                 self.tempoSuperaquecimento = self.duracaoSuperaquecimento
 
-        # Bernardo: intervalo para separar os tiros da nave
+        #  intervalo para separar os tiros da nave
         # Diminui a espera entre os disparos
 
         if self.tempo_tiro > 0:
-
             self.tempo_tiro -= 1
 
         # Controla o resfriamento dos canhões
-
         if disparou:
-
             self.tempoSemDisparo = 0
 
         elif self.tempoSuperaquecimento <= 0:
-
             self.tempoSemDisparo += 1
-
             if self.tempoSemDisparo >= self.tempoInicioResfriamento:
-
                 self.calorCanhoes = max(0, self.calorCanhoes - self.resfriamentoPorQuadro)
 
-        # Bernardo: movimentacao, remocao e colisoes dos tiros da nave
+        #  movimentacao, remocao e colisoes dos tiros da nave
         # Movimenta os tiros e remove os que saíram da tela
 
         # Movimenta os tiros
-
         for tiro in self.disparos[:]:
-
             tiro.update()
 
             # Remove o tiro quando sai da tela
-
             if tiro.y + 5 < 0:
-
                 self.disparos.remove(tiro)
-
                 continue
 
-            # Bernardo: so testa a colisao com o chefe na fase final
+            #  so testa a colisao com o chefe na fase final
             if self.spawnFinalizado and self.boss.ativo:
-
                 if tiro.x < self.boss.x + 8 and tiro.x + 2 > self.boss.x - 8 and tiro.y < self.boss.y + 16 and tiro.y + 5 > self.boss.y - 16:
-
                     self.boss.vida -= 1
-
                     self.disparos.remove(tiro)
-
                     if self.boss.vida <= 0:
-
                         self.boss.ativo = False
-
                         self.vitoria = True
 
-                        # Bernardo: som de vitoria
+                        #  som de vitoria
                         pyxel.play(2, 54)
-
                         explosao = Explosao(self.boss.x, self.boss.y)
-
                         self.explosoes.append(explosao)
-
-                    # Bernardo: o tiro ja foi removido ao acertar o chefe
                     continue
 
-            # Bernardo: colisao do tiro com o inimigo e reducao da vida
+            #  colisao do tiro com o inimigo e reducao da vida
             # Verifica se o tiro acertou algum inimigo
-
             for inimigo in self.inimigos:
-
                 if inimigo.ativo:
-
                     if (tiro.x < inimigo.x + 8 and tiro.x + 2 > inimigo.x - 8 and tiro.y < inimigo.y + 8 and tiro.y + 5 > inimigo.y - 8):
-
                         inimigo.vida -= 1
-
                         self.disparos.remove(tiro)
-
                         if inimigo.vida <= 0:
-
                             inimigo.ativo = False
-
                             self.xp += inimigo.xp
-
                             explosao = Explosao(inimigo.x, inimigo.y)
-
                             self.explosoes.append(explosao)
 
-                            # Bernardo: sorteia os power-ups deixados pelo inimigo
+                            #  sorteia os power-ups deixados pelo inimigo
                             chanceDrop = random.random()
-
                             if chanceDrop < 0.10:
-
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "vida"))
-
                             elif chanceDrop < 0.15:
-
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "escudo"))
-
-                            # Bernardo: 8% de chance de cair o power-up de tiro
+                            #8% de chance de cair o power-up de tiro
                             elif chanceDrop < 0.23:
                                 self.powerUps.append(PowerUp(inimigo.x, inimigo.y, "tiro"))
-
                         break
 
         # Atualiza os disparos inimigos
-
         for tiro in self.disparosInimigos[:]:
-
             tiro.update()
 
-            # Bernardo: remove tambem os tiros que saem pelas laterais
             if tiro.y > altura or tiro.x + 2 < 0 or tiro.x > largura:
-
                 self.disparosInimigos.remove(tiro)
-
                 continue
 
-            # Bernardo: colisao do tiro inimigo com a nave e protecao do escudo
             if tiro.x < self.player.x + 8 and tiro.x + 2 > self.player.x - 8 and tiro.y < self.player.y + 8 and tiro.y + 5 > self.player.y - 8:
-
                 if self.player.escudoTempo <= 0:
-
                     self.receberDano(tiro.dano)
-
                 self.disparosInimigos.remove(tiro)
 
-        # Bernardo: coleta dos power-ups e aplicacao de seus efeitos
         # Atualiza os power-ups e verifica a coleta
 
         for powerUp in self.powerUps[:]:
-
             powerUp.update()
-
             if not powerUp.ativo:
-
                 self.powerUps.remove(powerUp)
-
                 continue
 
             # Verifica colisão com o jogador
-
             if powerUp.x - 4 < self.player.x + 8 and powerUp.x + 4 > self.player.x - 8 and powerUp.y - 4 < self.player.y + 8 and powerUp.y + 4 > self.player.y - 8:
-
                 if powerUp.tipo == "vida":
-
                     self.player.vida = min(self.player.vidaMaxima, self.player.vida + 35)
 
                 elif powerUp.tipo == "escudo":
-
                     self.player.escudoTempo = self.player.duracaoEscudo
 
-                # Bernardo: pegar outro power-up renova a duracao
+                #  pegar outro power-up renova a duracao
                 elif powerUp.tipo == "tiro":
                     self.player.tempoTiroDuplo = self.player.duracaoTiroDuplo
 
-                # Bernardo: som ao pegar qualquer power-up
+                #  som ao pegar qualquer power-up
                 pyxel.play(1, 52)
                 self.powerUps.remove(powerUp)
 
         if self.boss.ativo:
-
             self.colidirComPlayer(self.boss, 16)
 
         # Remove os inimigos destruídos ou que saíram da tela
 
         for inimigo in self.inimigos[:]:
-
             if not inimigo.ativo:
-
                 self.inimigos.remove(inimigo)
-
                 continue
-
             self.colidirComPlayer(inimigo)
 
-    # Bernardo: colisao entre naves, separacao e efeito do escudo
     def colidirComPlayer(self, alvo, meiaAltura=8):
-
         dx = self.player.x - alvo.x
-
         dy = self.player.y - alvo.y
-
         sobX = 16 - abs(dx) # 8 do player + 8 do alvo
-
         sobY = 8 + meiaAltura - abs(dy)
 
         if alvo.recargaColisao > 0:
-
             alvo.recargaColisao -= 1
 
         if sobX <= 0 or sobY <= 0:
-
             return
 
         # impede de atravessar:
-
         if sobX < sobY:
-
             self.player.x += sobX if dx >= 0 else -sobX
 
         else:
-
             self.player.y += sobY if dy >= 0 else -sobY
 
         if self.player.escudoTempo > 0:
-
             # com escudo: a colisão não conta, mas o alvo leva o dano de um disparo
-
             if alvo.recargaColisao <= 0:
-
                 alvo.recargaColisao = 15
-
                 self.danoNoAlvo(alvo)
 
         else:
-
             self.receberDano(25, True)
 
-    # Bernardo: dano causado ao alvo pelo contato com o escudo
     def danoNoAlvo(self, alvo):
-
         alvo.vida -= 1
-
         if alvo.vida > 0:
-
             return
 
         alvo.ativo = False
-
         self.explosoes.append(Explosao(alvo.x, alvo.y))
 
         if alvo is self.boss:
-
             self.vitoria = True
-
-            # Bernardo: som de vitoria
+            #  som de vitoria
             pyxel.play(2, 54)
 
         if alvo is not self.boss:
-
             self.xp += alvo.xp
-
             chanceDrop = random.random()
-
             if chanceDrop < 0.10:
-
                 self.powerUps.append(PowerUp(alvo.x, alvo.y, "vida"))
 
             elif chanceDrop < 0.15:
-
                 self.powerUps.append(PowerUp(alvo.x, alvo.y, "escudo"))
 
-            # Bernardo: 8% de chance de cair o power-up de tiro
+            #  8% de chance de cair o power-up de tiro
             elif chanceDrop < 0.23:
                 self.powerUps.append(PowerUp(alvo.x, alvo.y, "tiro"))
 
     def criarInimigo(self):
-
         if self.spawnFinalizado:
-
             return
 
         x = random.randint(nave // 2, largura - nave // 2)
-
         y = -nave//2
 
         self.inimigos.append(Inimigo(x,y,self.fase))
 
     def verificarFase(self):
-
         if self.xp < 1000:
-
             self.fase = 1
 
         elif self.xp < 2500:
-
             self.fase = 2
 
         elif self.xp < xpObjetivo:
-
             self.fase = 3
 
         else: 
-
             self.spawnFinalizado = True
 
-    # Bernardo: dano na nave e intervalo de protecao contra colisoes
     def receberDano(self, dano, colisao=False):
-
         if self.vitoria:
-
             return
 
         if self.gameOver: #garantir que não ocorra dano após o game-over
-
             return
 
         if colisao:
-
             if self.player.invulTempo > 0:
-
                 return
-
             self.player.invulTempo = 45    
-
             self.player.avisoColisao = 30
-
         self.player.vida -= dano
-
-        # Bernardo: som ao receber dano
+        #  som ao receber dano
         pyxel.play(1, 53)
 
         if self.player.vida <= 0:
-
             self.player.vida = 0
-
             self.explosoes.append(Explosao(self.player.x, self.player.y))
-
             self.gameOver = True
-
-            # Bernardo: som de derrota
+            #  som de derrota
             pyxel.play(2, 55)
 
     def chefeAcoes(self):
-
         self.boss.update()
-
         self.timerSpawn += 1
 
         if self.boss.ativo and self.boss.atirar():
-
             tiro = Disparos(self.boss.x - 5, self.boss.y + 16, 3, 1)
-
             tiro.dano = 10
-
             self.disparosInimigos.append(tiro)
-
             tiro = Disparos(self.boss.x + 4, self.boss.y + 16, 3, 1)
-
             tiro.dano = 10
-
             self.disparosInimigos.append(tiro)
 
         if self.boss.ativo and self.timerSpawn > self.tempoSpawn*2:
-
             x = random.randint(nave//2, largura - nave//2)
-
             y = -nave//2
-
             self.inimigos.append(Inimigo(x,y,2))
-
             self.timerSpawn = 0
 
         if self.boss.ativo and self.boss.habilidade():
-
                 #Laser
-
                 for i in range(4):
-
                     x = random.randint(8, largura - 8)
-
                     self.lasers.append(Laser(x))
 
     def draw(self):
-
         pyxel.cls(0)
 
         # tela de vitória
-
         if self.vitoria:
-
             pyxel.cls(7)
-
             pyxel.blt(largura // 2 - 13, 68, 1, 0, 72, 26, 32, 0, 0, 3) #sprite vitoria
-
             pyxel.text(largura // 2 - 30, altura // 2 + 30, "PRESSIONE ENTER", 0)
-
             pyxel.text(largura // 2 - 38, altura // 2 + 40, "PARA VOLTAR AO MENU", 0)
-
             return
 
         #História
-
         if self.historia > 0:
-
             for fundo in self.estrelas:
-
                 fundo.draw()
-
             sx, sy, linhas = self.textosHistoria[self.historia - 1]
-
             pyxel.blt(largura // 2 - 8, 60, 1, sx, sy, 16, 16, 0, 0, 2)
-
             for i, linha in enumerate(linhas):
-
                 pyxel.text(largura // 2 - len(linha) * 2, 90 + i * 10, linha, 7)
-
             if self.historia == 1:
-
                 pyxel.text(largura // 2 - 40, altura - 30, "ENTER PARA CONTINUAR", 7)
-
             else:
-
                 pyxel.text(largura // 2 - 36, altura - 30, "ENTER PARA VOLTAR", 7)
-
             return
 
         # Menu
-
         if self.menuInicial:
-
             for fundo in self.estrelas:
-
                 fundo.draw()
-
             #pyxel.text(largura // 2 - 28, 90, "SPACE RAIDERS", 12)
-
             pyxel.blt(largura // 2 - 40, altura // 2 - 90, 2, 0, 0, 80, 80, 0) #logo
-
             pyxel.text(10, altura - 10, "Bernardo, Renan e Samuel - FURG", 7)
-
             pyxel.blt(largura - 20, altura - 20, 1, 40, 0, 16, 16, 0) # furg
-
             pyxel.blt(largura - 40, altura - 20, 1, 57, 0, 16, 16, 0) # C3
-
             for texto, y in (("INICIAR JOGO", 125), ("HISTORIA", 150)):
-
                 x = largura // 2 - 40
-
                 sobre = x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20
-
                 cor = 10 if sobre else 7
-
                 pyxel.rectb(x, y, 80, 20, cor)
-
                 pyxel.text(largura // 2 - len(texto) * 2, y + 7, texto, cor)
-
             return
 
         if self.menuDificuldade:
-
             for fundo in self.estrelas:
-
                 fundo.draw()
-
             pyxel.text(largura // 2 - 42, 85, "ESCOLHA A DIFICULDADE", 7)
 
             for texto, spawn, y in self.botoes:
-
                 x = largura // 2 - 40
-
                 sobre = x <= pyxel.mouse_x <= x + 80 and y <= pyxel.mouse_y <= y + 20
-
                 cor = 10 if sobre else 7
-
                 pyxel.rectb(x, y, 80, 20, cor)
-
                 pyxel.text(largura // 2 - len(texto) * 2, y + 7, texto, cor)
-
             return
 
         for fundo in self.estrelas:
-
             fundo.draw()
 
         for inimigo in self.inimigos:
-
             inimigo.draw()
-
         self.boss.draw()
 
-        # Bernardo: desenha os power-ups disponiveis para coleta
+        #  desenha os power-ups disponiveis para coleta
         for powerUp in self.powerUps:
-
             powerUp.draw()
 
         for explosao in self.explosoes:
-
             explosao.draw()
 
         for laser in self.lasers:
-
             laser.draw()
 
         if not self.gameOver:
-
             self.player.draw()
 
-        # Bernardo: desenha os disparos da nave
+        #  desenha os disparos da nave
         for tiro in self.disparos:
-
             tiro.draw()
 
         for tiro in self.disparosInimigos:
-
             tiro.draw()
 
-        # Bernardo: mostra a vida restante da nave
         # HUD - Barra de vida
 
         pyxel.text(8, altura - 25, "VIDA", 7)
-
         pyxel.rect(8, altura - 15, 60, 6, 8)
 
         larguraVida = int(60 * self.player.vida / self.player.vidaMaxima)
 
         if larguraVida > 0:
-
             pyxel.rect(8, altura - 15, larguraVida, 6, 11)
 
         # HUD - Barra de calor dos canhões
-
         pyxel.text(8, altura - 42, "CALOR", 7)
-
         pyxel.rect(8, altura - 32, 60, 5, 1)
 
         larguraCalor = int(60 * self.calorCanhoes / self.calorMaximo)
-
         corCalor = 9
-
         if self.tempoSuperaquecimento > 0:
-
             corCalor = 8
 
         if larguraCalor > 0:
-
             pyxel.rect(8, altura - 32, larguraCalor, 5, corCalor)
 
-        # Bernardo: barras mostram o tempo restante dos power-ups
+        #  barras mostram o tempo restante dos power-ups
         if self.player.escudoTempo > 0:
             pyxel.text(145, altura - 42, "ESCUDO", 12)
             pyxel.rect(145, altura - 32, 80, 5, 1)
@@ -1446,52 +989,32 @@ class Jogo:
             barraTiro = 80 * self.player.tempoTiroDuplo / self.player.duracaoTiroDuplo
             pyxel.rect(145, altura - 15, barraTiro, 5, 10)
 
-        # Bernardo: aviso de colisao para o jogador
         #Mensagem de colisão
-
         if self.player.avisoColisao > 0:
-
             pyxel.text(largura // 2 - 18, altura // 2 - 80, "Colisao!!", 8)
 
         # Mensagem de superaquecimento
-
         if self.tempoSuperaquecimento > 0 and not self.gameOver:
-
             pyxel.text(largura // 2 - 44, altura // 2 - 65, "ARMAS SUPERAQUECIDAS!", 8)
-
             pyxel.text(largura // 2 - 23, altura // 2 - 50, "AGUARDE...", 7)
 
         #tela de game over
-
         if self.gameOver:
-
             # caixa preta atrás da sprite e dos textos
-
             pyxel.rect(largura // 2 - 50, altura // 2 - 80, 105, 120, 0)
-
             #pyxel.rectb(largura // 2 - 50, altura // 2 - 80, 100, 120, 7) moldura branca
-
             pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0, 0, 3)
-
             #pyxel.blt(largura, altura, 1, 0, 72, 26, 32, 0, rotação, escala) base
-
             pyxel.blt(largura // 2 - 8, 40, 1, 0, 56, 16, 16, 0, 0, 2) #planeta
-
             #pyxel.text(largura // 2, altura // 2 - 15, "I", 8) pra testar o alinhamento
-
             #pyxel.text(largura // 2 - 17, altura // 2 - 10, "GAME OVER", 8)
-
             #pyxel.blt(largura // 2 - 18, altura // 2 - 25, 1, 0, 0, 37, 23, 0)
-
             pyxel.text(largura // 2 - 12, altura // 2 + 30, "XP: " + str(self.xp), 7)
-
             pyxel.text(largura // 2 - 26, altura // 2 + 40, "PRESSIONE ENTER", 10)
-
             pyxel.text(largura // 2 - 40, altura // 2 + 50, "PARA JOGAR NOVAMENTE", 10)
-
             return
 
-        # Bernardo: desenha a mensagem por cima do jogo pausado
+        #  desenha a mensagem por cima do jogo pausado
         if self.pausado:
             pyxel.rect(40, 100, 160, 45, 0)
             pyxel.rectb(40, 100, 160, 45, 7)
@@ -1499,204 +1022,120 @@ class Jogo:
             pyxel.text(76, 127, "APERTE P PARA CONTINUAR", 10)
 
 class Explosao:
-
     def __init__(self, x, y):
-
-        # Bernardo: toca o efeito quando uma explosao e criada
         pyxel.play(1, 51)
-
         self.x = x
-
         self.y = y
 
         # Coordenadas dos quadros da animação
-
         self.sprites = [
-
             (0, 32),
-
             (0, 48),
-
             (0, 64),
-
             (0, 80)
-
         ]
 
         self.quadro = 0
-
         self.tempo = 0
-
         self.velocidadeAnimacao = 5
-
         self.ativa = True
 
     def update(self):
-
         self.tempo += 1
-
         if self.tempo >= self.velocidadeAnimacao:
-
             self.tempo = 0
-
             self.quadro += 1
-
             if self.quadro >= len(self.sprites):
-
                 self.ativa = False
 
     def draw(self):
-
         if not self.ativa:
-
             return
-
         sprite_x, sprite_y = self.sprites[self.quadro]
 
         pyxel.blt(
-
             self.x - nave // 2,
-
             self.y - nave // 2,
-
             0,
-
             sprite_x,
-
             sprite_y,
-
             nave,
-
             nave,
-
-            0
-
-        )
+            0)
 
 class Laser:
-
     def __init__(self, x):
-
         self.x = x
-
         self.y = 28
-
         self.largura = 16
 
         #Organizando o disparo
-
         self.tempoAviso = 35
-
         self.duracaoDisparo = 45
-
         self.tempo = 0
-
         self.disparado = False
-
         self.ativa = True
-
         self.danoAplicado = False
-
         self.quadro = 0
-
         self.tempo2 = 0
-
         self.velocidadeAnimacao = 5
 
     def update(self):
-
         self.tempo += 1
 
         # Depois do aviso, o feixe fica ativo por alguns quadros.
-
         if self.tempo >= self.tempoAviso:
-
             self.disparado = True
-
             self.y = 0
-
             self.tempo2 += 1
-
             if self.quadro < 3 and self.tempo2 >= self.velocidadeAnimacao:
-
                 self.quadro += 1
-
                 self.tempo2 = 0
-
         if self.tempo >= self.tempoAviso + self.duracaoDisparo:
-
             self.ativa = False
 
     def draw(self):
-
         if not self.ativa:
-
             return
 
         if not self.disparado:
-
             # Sprite do aviso
-
             pyxel.blt(self.x - nave//2, self.y - nave//2, 0, 16, 32 , 16 , 16 , 0)
 
         else:
-
             # Raio laser
-
             if self.quadro == 0:
-
                 pyxel.rect(
-
                     int(self.x - self.largura // 8), int(self.y),
-
                     4, altura - int(self.y), 12
-
                 )
 
             elif self.quadro == 1:
-
                 pyxel.rect(
-
                     int(self.x - self.largura // 4), int(self.y),
-
                     8, altura - int(self.y), 12
-
                 )
 
             elif self.quadro == 2:
-
                 pyxel.rect(
-
                     int(self.x - (self.largura-10)), int(self.y),
-
                     12, altura - int(self.y), 12
-
                 )
 
                 pyxel.rect(
-
                     int(self.x - 2 // 2), int(self.y),
-
                     2, altura - int(self.y), 7
-
                 )
 
             else: 
-
                 pyxel.rect(
-
                     int(self.x - self.largura // 2), int(self.y),
-
                     16, altura - int(self.y), 12
-
                 )
 
                 pyxel.rect(
-
                     int(self.x - 10 // 2), int(self.y),
-
                     10, altura - int(self.y), 7
-
                 )
 
 Jogo()
